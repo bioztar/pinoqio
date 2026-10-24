@@ -31,10 +31,10 @@ def test_drift_label_has_time_and_values():
     assert v.chips[0].label == "Price: 40k at 0:42, now 48k"
 
 
-def test_vocal_is_small_and_capped():
+def test_vocal_alone_can_say_probably_false_but_is_capped():
     pros = {k: 9.0 for k in ("pitch_mean_hz_z", "latency_s_z", "pause_ratio_z", "rate_wps_z", "filler_count_z")}
     v = score(Analysis(), pros)
-    assert 0.12 < v.probability < 0.3
+    assert 0.5 < v.probability < 0.7  # demo parity: strong voice stress alone reads "probably false"
     assert v.vocal == v.probability
     assert sum(c.weight for c in v.chips) * 4.0 <= VOCAL_CAP + 0.01
     assert {c.kind for c in v.chips} <= {"pitch", "latency", "pause", "rate", "filler"}

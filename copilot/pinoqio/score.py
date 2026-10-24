@@ -9,6 +9,7 @@ Weights are logit increments. Rationale:
 - Best multimodal deception detection is ~65% (DOLOS, ICCV 2023), so never show > 95%.
 """
 import math
+import os
 from dataclasses import dataclass
 
 from pinoqio.analyst import Analysis
@@ -19,7 +20,11 @@ W_CONTRADICTION = 4.0  # x confidence
 W_DRIFT = 2.0
 W_EVASION = 1.8      # x score
 W_HEDGING = 1.0       # x score
-VOCAL_CAP = 0.8       # max total logit from all vocal cues
+# Vitaly, demo day: voice cues count about as much as the text cues, so an answer with no
+# contradiction ("48 is our final price") can still read "probably false" from the voice alone.
+# The literature says voice cues are weak (see top of file); PINOQIO_VOCAL_GAIN=1 restores that.
+VOCAL_GAIN = float(os.environ.get("PINOQIO_VOCAL_GAIN", "3.0"))
+VOCAL_CAP = 0.8 * VOCAL_GAIN  # max total logit from all vocal cues
 MAX_PROB = 0.95
 MIN_CHIP_LOGIT = 0.3  # contributors below this are noise, no chip
 Z_MIN, Z_MAX = 1.0, 3.0  # ignore |z| < 1, clip at 3
@@ -79,7 +84,7 @@ def _vocal_cues(prosody: dict[str, float]) -> tuple[_Cue, ...]:
         z = z if one_way else abs(z)
         if z < Z_MIN:
             continue
-        logit = weight * min(z, Z_MAX)
+        logit = weight * VOCAL_GAIN * min(z, Z_MAX)
         raw.append(_Cue(_chip(kind, label.format(z=z), logit), logit))
     total = sum(c.logit for c in raw)
     scale = VOCAL_CAP / total if total > VOCAL_CAP else 1.0
