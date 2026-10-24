@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pinoqio, the call copilot</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--line:#262b36;--mute:#8a91a0;--txt:#e8eaf0;--accent:#6ea8ff;--p:#3ecf6e;--red:#d9483b}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:clamp(18px,2.2vw,28px)/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:5vh 8vw;gap:2.2vh}
+.slide.on{display:flex}
+h1{font-size:2.6em;line-height:1.1;margin:0}
+h2{font-size:1.9em;line-height:1.15;margin:0;color:var(--txt)}
+h2 em,h1 em{font-style:normal;color:var(--accent)}
+.sub{color:var(--mute);font-size:1.1em;margin:0}
+.big{font-size:1.5em;margin:0}
+.hot{color:var(--red)}.ok{color:var(--p)}
+ul{margin:0;padding-left:1.1em}li{margin:.4em 0}
+img.hero{width:100%;max-height:52vh;object-fit:contain;border-radius:14px;border:1px solid var(--line)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2vw}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1em 1.1em}
+.card b{display:block;color:var(--accent);margin-bottom:.2em}
+.card span{color:var(--mute);font-size:.85em}
+.flow{display:flex;align-items:stretch;gap:.6vw;flex-wrap:wrap}
+.flow .card{flex:1;min-width:130px;text-align:center}
+.flow .arr{align-self:center;color:var(--accent);font-size:1.6em}
+.stat{font-size:3.4em;font-weight:700;color:var(--p);line-height:1}
+.pill{display:inline-block;background:#1d2b44;color:var(--accent);border-radius:99px;padding:.15em .8em;font-size:.8em}
+.qr{width:min(34vh,300px);background:#fff;border-radius:14px;padding:10px}
+.row{display:flex;gap:4vw;align-items:center}
+.cue{align-items:center;text-align:center}
+.cue h1{font-size:3.4em}
+#hud{position:fixed;right:2vw;bottom:1.5vh;color:var(--mute);font-size:14px}
+#bar{position:fixed;left:0;bottom:0;height:3px;background:var(--accent);transition:width .2s}
+</style>
+</head>
+<body>
+
+<section class="slide cue" data-t="0:15">
+  <h1>Pino<em>q</em>io</h1>
+  <img class="hero" src="img/options/A-cover-suit.png" alt="Pinoqio in a suit">
+  <p class="big">The call copilot that watches the other side's nose grow.</p>
+</section>
+
+<section class="slide">
+  <h2>You can't track <em>every number</em> live.</h2>
+  <ul>
+    <li>Prices, dates, volumes, promises: dozens per call, nobody writes them all down.</li>
+    <li>When the supplier says <b>"we never quoted that"</b>, you have no proof in the moment.</li>
+    <li>Hard questions get <span class="hot">dodged</span> and the call moves on.</li>
+    <li>People catch lies <b>~54% of the time</b>. A coin flip with a suit on.</li>
+  </ul>
+</section>
+
+<section class="slide cue">
+  <p class="pill">Live demo</p>
+  <h1>"Pinoqio, meet our <em>supplier</em>."</h1>
+  <p class="sub">Real call. Real numbers. Watch the nose.</p>
+</section>
+
+<section class="slide">
+  <h2>How it <em>works</em></h2>
+  <div class="flow">
+    <div class="card"><b>Ears</b><span>live audio, speech to text, prosody</span></div><div class="arr">→</div>
+    <div class="card"><b>Brain</b><span>Gemma 4 analyst: claims, numbers, dodges</span></div><div class="arr">→</div>
+    <div class="card"><b>Verifier</b><span>Nebius DeepSeek second opinion</span></div><div class="arr">→</div>
+    <div class="card"><b>Face</b><span>floating window, chips, the nose</span></div><div class="arr">→</div>
+    <div class="card"><b>Voice</b><span>ElevenLabs speaks up when it matters</span></div>
+  </div>
+  <p class="sub">A ledger of every claim, contradictions flagged against what was said earlier, a post-call summary.</p>
+</section>
+
+<section class="slide">
+  <h2>Why it's <em>honest</em></h2>
+  <div class="cards">
+    <div class="card"><b>Evidence, not vibes</b><span>Decades of lab work: verbal content and delivery shifts carry signal, single "tells" don't. We score cues, not guilt.</span></div>
+    <div class="card"><b>Always two models</b><span>One analyses, a second independent model verifies before anything is flagged.</span></div>
+    <div class="card"><b>Our eval</b><span class="ok" style="font-size:1.1em">{{EVAL}}</span></div>
+  </div>
+  <p class="sub">Output is a cue score with the quote behind it. You decide.</p>
+</section>
+
+<section class="slide">
+  <h2>The nose has <em>stages</em></h2>
+  <img class="hero" src="img/options/E-stages.png" alt="Nose growth stages">
+  <p class="sub">Calm, doubt, stretch, strong cue. Glanceable in half a second, mid-sentence.</p>
+</section>
+
+<section class="slide">
+  <h2>Built on <em>open</em> tools</h2>
+  <div class="cards">
+    <div class="card"><b>Gemma 4</b><span>Open-weights analyst, runs the live loop</span></div>
+    <div class="card"><b>ElevenLabs</b><span>Natural voice for spoken nudges</span></div>
+    <div class="card"><b>Nebius</b><span>Verifier, fallback, post-call summary</span></div>
+    <div class="card"><b>MIT</b><span>Open source, fork it today</span></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>And the <em>judge</em></h2>
+  <p class="sub">Second track: our partner's Plata judge.</p>
+  <div class="row"><div class="stat">0.814</div><div class="big">→</div><div class="stat">0.894</div></div>
+  <p class="sub">Judge score, before and after.</p>
+</section>
+
+<section class="slide cue">
+  <h2>Try it <em>now</em></h2>
+  <img class="qr" src="img/qr.svg" alt="QR code for pinoqio.pro7ocol.com">
+  <p class="big">https://pinoqio.pro7ocol.com</p>
+  <p class="sub">Press "Try live". Talk to it. Thank you.</p>
+</section>
+
+<div id="hud"></div><div id="bar"></div>
+<script>
+const S=[...document.querySelectorAll('.slide')];let i=0;
+function show(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach((s,k)=>s.classList.toggle('on',k===i));
+document.getElementById('hud').textContent=(i+1)+' / '+S.length;
+document.getElementById('bar').style.width=((i+1)/S.length*100)+'%';
+history.replaceState(null,'','#'+(i+1))}
+addEventListener('keydown',e=>{
+if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(i+1)}
+else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(i-1)}
+else if(e.key==='Home')show(0);else if(e.key==='End')show(S.length-1)});
+addEventListener('click',e=>show(e.clientX<innerWidth*.25?i-1:i+1));
+show((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
