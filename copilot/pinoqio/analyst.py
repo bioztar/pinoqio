@@ -17,6 +17,7 @@ class NumberDrift:
     then_value: str
     now_value: str
     then_t: float | None = None  # seconds when the earlier value was said
+    then_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -90,7 +91,7 @@ def _drift(raw: Any, history: Sequence[Utterance]) -> NumberDrift | None:
     if not (item and then_v and now_v) or _norm(then_v) == _norm(now_v):
         return None
     then = next((u for u in history if u.id == raw.get("then_utterance_id")), None)
-    return NumberDrift(item, then_v, now_v, then.t_start if then else None)
+    return NumberDrift(item, then_v, now_v, then.t_start if then else None, then.id if then else None)
 
 
 def _ledger_updates(raw: Any, uid: int) -> tuple[LedgerItem, ...]:

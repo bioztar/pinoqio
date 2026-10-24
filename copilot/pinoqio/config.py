@@ -25,3 +25,20 @@ def gemini_key() -> str:
 
 def elevenlabs_key() -> str:
     return _require("ELEVENLABS_API_KEY")
+
+
+def nebius_key() -> str:
+    return _require("NEBIUS_API_KEY")
+
+
+def _optional(name: str, default: str) -> str:
+    _load()
+    return os.environ.get(name) or default
+
+
+def nebius_base_url() -> str:
+    return _optional("NEBIUS_BASE_URL", "https://api.studio.nebius.com/v1/")
+
+
+def nebius_model() -> str:
+    return _optional("NEBIUS_MODEL", "deepseek-ai/DeepSeek-V4.1-Flash")  # fastest + correct on bench, scripts/nebius_bench.py
