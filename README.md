@@ -105,3 +105,7 @@ A separate project in the same repo, built by the other half of the team. It has
 MIT, see [LICENSE](LICENSE). Gemma 4 (Google DeepMind, Apache-2.0) via the Gemini API.
 
 Per the event rules, all project work started at the event (11:30 CET, 24 October 2026). The repository was created the night before and held only the license and placeholders.
+
+## Honest numbers
+
+On 56 scripted negotiation lines (8 scenarios): contradictions 100% precision / 88% recall, any-flag recall 88%, 25% false flags on honest lines. Text only, one run. Full report: [`copilot/eval/report.md`](copilot/eval/report.md).
