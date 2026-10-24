@@ -4,6 +4,7 @@ Gemma 4 analyses every utterance; Nebius is the fallback analyst (Gemma error or
 verifier of any contradiction / number drift Gemma reports (see verifier.py).
 """
 import asyncio
+import time
 import logging
 from dataclasses import replace
 from typing import AsyncIterator, Sequence
@@ -17,11 +18,11 @@ from pinoqio.verifier import Verification, refine
 
 log = logging.getLogger(__name__)
 
-HEDGE_S = 3.5          # Gemma alone for this long, then Nebius races it
-TOTAL_BUDGET_S = 11.0  # analysis deadline per line; 1 s over Gemma's own 10 s timeout so a slow Gemma still lands when Nebius is down
+HEDGE_S = 1.5          # Gemma alone for this long, then Nebius races it (demo latency, 17:25)
+TOTAL_BUDGET_S = 8.0   # analysis deadline per line; lines are processed in order, so a slow line delays the next
 GEMMA_LABEL = "Gemma 4"
 FALLBACK_LABEL = "Nebius (fallback)"
-NEBIUS_ANALYST_TIMEOUT_S = 4.5  # per model in the Nebius chain
+NEBIUS_ANALYST_TIMEOUT_S = 4.0  # per model in the Nebius chain
 
 
 async def _nebius_analyst(prompt: str, system: str | None) -> dict:
@@ -89,8 +90,11 @@ async def verdicts(
         yield u
         if u.speaker != "them":
             continue
+        t0 = time.monotonic()
         analysis, answered = await _analyze(history, ledger, ask, fallback)
+        t1 = time.monotonic()
         analysis, verification = await refine(analysis, history, ledger, verify_ask)
+        log.info("timing utterance %s: analyst %.1fs (%s), verifier %.1fs", u.id, t1 - t0, answered, time.monotonic() - t1)
         ledger = merge_ledger(ledger, analysis.ledger_updates)
         v = score(analysis, u.prosody)
         yield replace(v, chips=v.chips + _badge(answered, verification), ledger=ledger)

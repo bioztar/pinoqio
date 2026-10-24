@@ -18,8 +18,8 @@ log = logging.getLogger(__name__)
 
 SYSTEM = (Path(__file__).parent / "prompts" / "verifier.md").read_text()
 WINDOW = 16  # transcript lines sent to the verifier; the claim quotes are in the prompt anyway
-VERIFY_TIMEOUT_S = 5.0  # per model, so a two-model chain stays near the 8 s line budget
-VERIFY_BUDGET_S = 6.0  # whole verifier step, chain included; on timeout Gemma's result is kept, capped
+VERIFY_TIMEOUT_S = 2.5  # per model; the verifier only adjusts confidence, it must not hold the callout
+VERIFY_BUDGET_S = 3.0  # whole verifier step; on timeout Gemma's result is kept, capped
 UNVERIFIED_CAP = 0.8# below voice.INTERJECT_MIN_CONF (0.85)
 
 
