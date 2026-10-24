@@ -1,18 +1,14 @@
-# HANDOVER — pinoqio — 2026-10-24 16:12
-## State: copilot + judge lanes merged on main (116 tests), web live at https://pinoqio.pro7ocol.com; MLH submission pending (DevRelay installed, needs Claude Code restart).
+# HANDOVER — pinoqio — 2026-10-24 16:30
+## State: everything merged on main and clean (copilot #3-#47, judge #18 at 0.934). Web live at https://pinoqio.pro7ocol.com. MLH submitted (manually). Demo 16:45.
 ## Done this session
-- Copilot: ears (Scribe Realtime), brain (Gemma 4 analyst + Nebius DeepSeek verifier/fallback/summary, hedged race), face (floating window, image nose with BOING animation, claim check card, --art cartoon|scene), voice modes (--voice public|whisper|private), doctor preflight, eval report, pitch deck, architecture build slide, web demo + Try live (passcode in server .env).
-- Partner judge lane: 0.934 on Plata public test (PR #18, partner merges); Docker tested on VPS, findings on PR #18.
-## In flight
-- MLH submission: content ready in copilot/docs/SUBMISSION.md. After restart, run the DevRelay prompt (devrelay-mlh-submissions skill), deadline 18:00 CEST.
-- Backup video: copilot/scripts/record_backup.sh (needs unlocked Mac, ~3 min).
-## Next steps
-1. Restart Claude Code, paste the DevRelay prompt, submit + enter 4 categories.
-2. Live Teams test with partner (scenario A in chat): `cd copilot && uv run python -m pinoqio.doctor`, then `uv run python -m pinoqio.app --source live --voice public --demo-safe [--art scene]`.
-3. Demo 16:45.
-## Blockers / needs human
-- Gemma free tier + Nebius gateway were flaky 15:00-15:45 (timeouts, 503 bursts): if doctor shows red, demo the replay.
-## Key files
-- copilot/docs/SUBMISSION.md — MLH form answers
-- copilot/docs/pitch.html, architecture-slide.html — stage
-- copilot/eval/report.md — honest numbers
+- Copilot lane complete (see coord/STATUS.md). Judge lane merged from PR #18 (partner's authorship kept).
+- Plata fork: https://github.com/balalaka128/metalearning-llmaaj @ 03c9dbc893c48485a0ab170b04dd3b5b4de6ffb2 (public, code identical to judge/ on main). Docker tested: copilot/docs/judge-docker-report.md.
+- Tidy: worktrees removed, merged branches deleted, PR #1 and issues #2/#14 closed.
+## Open
+- Plata: confirm the partner sent the organizers the fork URL + commit SHA (README "Submitting your solution"). Do not push to the fork after sending.
+- Combined stage deck: needs the partner's generated runs/final/deck.html (judge/deck.py output, data stays local).
+- Backup video: copilot/scripts/record_backup.sh on an unlocked Mac.
+## Run the demo
+1. `cd copilot && uv run python -m pinoqio.doctor`
+2. `uv run python -m pinoqio.app --source live --voice public --demo-safe` (add `--art scene` for the partner's art, `PINOQIO_LANG=ru` for Russian lines)
+3. Fallback: `--source replay --them-wav demo/replay/them.wav --me-wav demo/replay/me.wav`, or the web demo.
