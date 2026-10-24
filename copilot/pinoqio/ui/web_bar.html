@@ -12,6 +12,9 @@
 <div id="webbar">
   <button id="play">Play demo</button>
   <button id="live" class="alt hidden">Try live</button>
+  <input id="pass" class="hidden" type="password" placeholder="passcode" autocomplete="off"
+    style="font:inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:#0f1115;color:var(--txt);width:110px">
+  <button id="go" class="hidden">Start</button>
   <p>Pinoqio listens to a negotiation call and shows, live, how likely the other side is lying and why.
     This is a recorded call. <a href="https://github.com/bioztar/pinoqio" target="_blank" rel="noopener">GitHub</a></p>
 </div>
@@ -65,5 +68,119 @@
     };
   });
   setStatus('press Play demo');
+
+  // ---- Try live: visitor mic = "me", shared tab audio = "them", both streamed as 16 kHz int16 ----
+  if (window.PINOQIO_LIVE) $('live').classList.remove('hidden');
+  const WORKLET = `
+    class Pcm extends AudioWorkletProcessor {
+      constructor() { super(); this.buf = new Int16Array(1600); this.n = 0; }
+      process(inputs) {
+        const chans = inputs[0];
+        if (!chans.length) return true;
+        for (let i = 0; i < chans[0].length; i++) {
+          let s = 0;
+          for (const c of chans) s += c[i];
+          s = Math.max(-1, Math.min(1, s / chans.length));
+          this.buf[this.n++] = s < 0 ? s * 32768 : s * 32767;
+          if (this.n === this.buf.length) { this.port.postMessage(this.buf.slice().buffer); this.n = 0; }
+        }
+        return true;
+      }
+    }
+    registerProcessor('pcm', Pcm);`;
+  let session = null;   // { ws, ctx, streams }
+
+  function liveCleanup() {
+    if (!session) return;
+    const s = session; session = null;
+    if (s.ws) { s.ws.onclose = null; try { s.ws.close(); } catch (e) { /* already closed */ } }
+    if (s.ctx) s.ctx.close().catch(() => {});
+    s.streams.forEach(st => st.getTracks().forEach(t => t.stop()));
+    $('live').textContent = 'Try live'; $('live').disabled = false;
+    $('play').disabled = false;
+  }
+
+  function liveError(msg) {
+    console.error('live:', msg);
+    liveCleanup();
+    setStatus(`live error: ${msg}`);
+    $('status').style.color = '#ffb4a8';
+  }
+
+  async function startLive() {
+    $('status').style.color = '';
+    stop();
+    session = { ws: null, ctx: null, streams: [] };
+    const mine = session;
+    $('play').disabled = true;
+    try {
+      setStatus('allow the microphone…');
+      const mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      mine.streams.push(mic);
+      setStatus('pick the Meet/Teams tab and tick "Share tab audio"…');
+      const disp = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+      mine.streams.push(disp);
+      if (!disp.getAudioTracks().length) throw new Error('no tab audio shared: choose a Chrome tab and tick "Share tab audio"');
+      disp.getVideoTracks().forEach(t => { t.onended = () => liveStop(); });
+      disp.getAudioTracks().forEach(t => { t.onended = () => liveStop(); });
+
+      mine.ctx = new AudioContext({ sampleRate: 16000 });
+      await mine.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], { type: 'application/javascript' })));
+
+      window.pinoqio.reset();
+      setStatus('connecting…');
+      const ws = new WebSocket(wsUrl('/live'));
+      mine.ws = ws;
+      ws.binaryType = 'arraybuffer';
+      ws.onclose = () => { if (session === mine) liveError('connection closed'); };
+      ws.onmessage = e => {
+        const m = JSON.parse(e.data);
+        if (m.type === 'ready') { beginStreaming(mine); }
+        else if (m.type === 'error') liveError(m.message);
+        else if (m.type === 'end') { liveCleanup(); setStatus(m.reason || 'live call ended'); }
+        else window.pinoqio.handle(m);
+      };
+      ws.onopen = () => ws.send(JSON.stringify({ passcode: $('pass').value }));
+    } catch (err) {
+      liveError(err.message || String(err));
+    }
+  }
+
+  function beginStreaming(mine) {
+    if (session !== mine) return;
+    const mute = mine.ctx.createGain(); mute.gain.value = 0; mute.connect(mine.ctx.destination);
+    [[0, mine.streams[0]], [1, mine.streams[1]]].forEach(([channel, stream]) => {
+      const node = new AudioWorkletNode(mine.ctx, 'pcm');
+      node.port.onmessage = e => {
+        if (mine.ws.readyState !== WebSocket.OPEN) return;
+        const frame = new Uint8Array(1 + e.data.byteLength);
+        frame[0] = channel; frame.set(new Uint8Array(e.data), 1);
+        mine.ws.send(frame);
+      };
+      mine.ctx.createMediaStreamSource(new MediaStream(stream.getAudioTracks().slice(0, 1))).connect(node);
+      node.connect(mute);
+    });
+    $('live').textContent = 'Stop'; $('live').disabled = false;
+    setStatus('live: listening (5 min max)');
+  }
+
+  function liveStop() {
+    if (!session || !session.ws || session.ws.readyState !== WebSocket.OPEN) { liveCleanup(); return; }
+    setStatus('finishing…');
+    $('live').disabled = true;
+    session.ws.send('stop');      // server flushes the tail, then sends "end"
+  }
+
+  $('live').addEventListener('click', () => {
+    if (session) { liveStop(); return; }
+    $('pass').classList.toggle('hidden'); $('go').classList.toggle('hidden');
+    $('pass').focus();
+  });
+  $('go').addEventListener('click', () => {
+    $('pass').classList.add('hidden'); $('go').classList.add('hidden');
+    $('live').disabled = true;
+    startLive();
+  });
+  $('pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
 })();
 </script>
