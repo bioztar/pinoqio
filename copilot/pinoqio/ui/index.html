@@ -27,8 +27,10 @@
   #face img { position:absolute; inset:0; width:100%; height:100%; opacity:0; transition:opacity .4s ease-in-out; }
   #face img.on { opacity:1; }
   /* ?art=scene: partner's photo player in the face slot (3:2) instead of the cartoon frames */
-  #scene { display:none; width:264px; height:176px; border:0; border-radius:10px; margin:0 auto; }
-  body.scene #scene { display:block; }
+  /* full-width photo in its own area; all text lives in the cards below it (bottom of the photo is cropped) */
+  #scenebox { display:none; width:100%; height:180px; overflow:hidden; border-radius:10px; }
+  #scene { width:100%; aspect-ratio:3/2; height:auto; border:0; display:block; }
+  body.scene #scenebox { display:block; }
   body.scene #face { display:none; }
   /* cartoon squash & stretch on the head, tip glow flash, comic burst, leaf, deflate */
   #face.boing { animation:boing .6s cubic-bezier(.3,1.6,.5,1); transform-origin:35% 65%; }
@@ -113,7 +115,7 @@
     </svg>
     <div id="burst" class="burst" aria-hidden="true"></div>
   </div>
-  <iframe id="scene" title="Pinoqio scene" aria-hidden="true"></iframe>
+  <div id="scenebox"><iframe id="scene" title="Pinoqio scene" aria-hidden="true"></iframe></div>
   <div id="pct">0% <small>chance of lying</small></div>
   <div id="badge"></div>
 </div>
@@ -175,9 +177,9 @@
     document.body.classList.add('scene');
     const frame = $('scene');
     frame.onload = () => {
-      try {  // at 264x176 the speech bubble would cover the nose; our own cards carry the text
+      try {  // no text over the photo: hide the player's caption bubble and contradiction counter
         const css = frame.contentDocument.createElement('style');
-        css.textContent = '.bubble { display: none !important; }';
+        css.textContent = '.bubble, .count, .top, .bar, .hint { display: none !important; }';
         frame.contentDocument.head.appendChild(css);
       } catch (e) { console.warn('could not hide the scene bubble', e); }
       scene.ready = true; pushScene();
