@@ -51,3 +51,22 @@ def test_ask_next_used_when_short_else_fallback():
 def test_module_hooks_exist_for_app_and_server():
     from pinoqio import voice
     assert callable(voice.on_verdict) and callable(voice.interject)
+
+
+def test_say_it_button_speaks_every_press(monkeypatch):
+    import asyncio
+    from pinoqio import voice
+    spoken = []
+
+    async def fake_speak(self, text, device_name):
+        spoken.append(text)
+
+    monkeypatch.setattr(voice.Voice, "_speak", fake_speak)
+    monkeypatch.setattr(voice, "_voice", None)
+
+    async def press_twice():
+        await voice.interject("one")
+        await voice.interject("two")
+
+    asyncio.run(press_twice())
+    assert spoken == ["one", "two"]
