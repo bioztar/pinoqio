@@ -52,7 +52,7 @@ example. At 14 requests per minute, `adapt` on 150 examples takes about 8 minute
 | | macro_topic_accuracy | bad answers missed |
 |---|---|---|
 | Gemma 4 26B A4B, plain prompt | 0.814 | 13 of 30 |
-| Pinoqio rulebook | 0.894 | 6 of 30 |
+| Pinoqio rulebook (final run) | 0.934 | 4 of 30 |
 
 Plata's data goes in `judge/data/` and is never committed (see `.gitignore`). Score locally with Plata's
 scorer: `./score.sh runs/<run>`. `report.py` builds the one-page stage report from a run.
