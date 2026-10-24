@@ -1,6 +1,7 @@
 """Live capture: two sounddevice input streams -> 16 kHz mono int16 chunks."""
 import asyncio
 import os
+import threading
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 
@@ -16,6 +17,10 @@ DEFAULT_ME = "MacBook Air Microphone"
 
 class DeviceNotFound(RuntimeError):
     pass
+
+
+# Set by pinoqio.voice while a clip plays out loud, so the mic doesn't hear Pinoqio as a speaker.
+SPEAKING = threading.Event()
 
 
 def find_device(name: str) -> tuple[int, int]:
@@ -47,7 +52,10 @@ async def _open(name: str) -> AsyncIterator[asyncio.Queue]:
     queue: asyncio.Queue = asyncio.Queue()
 
     def callback(indata, frames, time_info, status):
-        loop.call_soon_threadsafe(queue.put_nowait, to_mono_int16(indata))
+        block = to_mono_int16(indata)
+        if SPEAKING.is_set():  # Pinoqio is talking through the speakers: don't transcribe itself
+            block = np.zeros_like(block)
+        loop.call_soon_threadsafe(queue.put_nowait, block)
 
     stream = sd.InputStream(
         device=index, samplerate=SR, channels=min(channels, 2),
