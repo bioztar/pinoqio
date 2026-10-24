@@ -93,7 +93,9 @@ def main() -> None:
     if args.source == "replay" and not (args.them_wav and args.me_wav):
         p.error("--source replay needs --them-wav and --me-wav")
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
+    for noisy in ("httpx", "google_genai.models"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     if args.demo_safe:
         from pinoqio import doctor
         print(doctor.render(asyncio.run(doctor.prewarm())))
