@@ -84,7 +84,7 @@
       <div class="card local">
         <span class="tag">Local · Praat</span>
         <h3>Voice vs own baseline</h3>
-        <p>Pitch, pauses, speech rate, fillers, response latency. Weak cues, small weight (d ≈ 0.2–0.3)</p>
+        <p>Pitch, pauses, speech rate, fillers, response latency. Weighted on par with text cues, so a claim like “48 is final” gets a probability too</p>
       </div>
       <div class="card gemma big">
         <span class="tag">Gemma 4 · 26B A4B</span>
@@ -114,7 +114,7 @@
       <div class="card local">
         <span class="tag">Scorer</span>
         <h3>Lie % + evidence chips</h3>
-        <p>Verbal cues dominate, voice cues nudge. Capped at 95%: a nudge, not a verdict</p>
+        <p>Text and voice cues combined per answer: “probably false · 74%”. Capped at 95%: a nudge, not a verdict</p>
       </div>
     </div>
     <div class="arrow">→</div>
