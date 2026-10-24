@@ -223,3 +223,6 @@ __marimo__/
 .DS_Store
 recordings/
 *.wav
+
+# demo fallback recordings are committed on purpose
+!copilot/demo/replay/*.wav
