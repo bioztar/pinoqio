@@ -11,6 +11,7 @@ import uvicorn
 
 from pinoqio import fake
 from pinoqio.events import Utterance, Verdict
+from pinoqio.record import recording
 from pinoqio.server import Hub, create_app
 
 log = logging.getLogger("pinoqio.app")
@@ -47,17 +48,15 @@ def make_source(args: argparse.Namespace):
     async def pipeline_source(hub: Hub):
         # Lazy: ears/brain land in other lanes. ponytail: assumes ears.utterances(**wavs) / brain.verdicts(stream).
         from pinoqio import brain, ears
-        kwargs = {"them_wav": args.them_wav, "me_wav": args.me_wav} if args.source == "replay" else {}
-
-        async def tee():
-            async for u in ears.utterances(**kwargs):
-                hub.publish(u)
-                yield u
-
-        async for v in with_voice_hook(brain.verdicts(tee())):
+        wavs = {"them_wav": args.them_wav, "me_wav": args.me_wav} if args.source == "replay" else {}
+        # brain.verdicts yields the utterances too, so no tee into the hub
+        async for v in with_voice_hook(brain.verdicts(ears.utterances(args.source, **wavs))):
             yield v
 
-    return fake_source if args.source == "fake" else pipeline_source
+    source = fake_source if args.source == "fake" else pipeline_source
+    if not args.record:
+        return source
+    return lambda hub: recording(source(hub), args.record)
 
 
 def main() -> None:
@@ -66,6 +65,7 @@ def main() -> None:
     p.add_argument("--them-wav")
     p.add_argument("--me-wav")
     p.add_argument("--no-window", action="store_true")
+    p.add_argument("--record", metavar="PATH.jsonl", help="write every event with its time offset (feeds the web demo)")
     p.add_argument("--speed", type=float, default=1.0, help="fake source playback speed")
     args = p.parse_args()
     if args.source == "replay" and not (args.them_wav and args.me_wav):

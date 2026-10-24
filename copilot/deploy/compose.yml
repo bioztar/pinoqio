@@ -1,0 +1,28 @@
+# On the VPS: git clone https://github.com/bioztar/pinoqio ~/apps/pinoqio
+#   docker compose -f copilot/deploy/compose.yml up -d --build
+# API keys (GEMINI_API_KEY, ELEVENLABS_API_KEY) and PINOQIO_LIVE_PASSCODE live only in ~/apps/pinoqio/.env on the box.
+# The demo page needs none of them; Try live needs all three.
+services:
+  pinoqio:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: pinoqio
+    restart: unless-stopped
+    env_file:
+      - path: ../../.env
+        required: false
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.pinoqio.entrypoints: websecure
+      traefik.http.routers.pinoqio.rule: Host(`pinoqio.pro7ocol.com`)
+      traefik.http.routers.pinoqio.tls: 'true'
+      traefik.http.routers.pinoqio.tls.certresolver: mytlschallenge
+      traefik.http.services.pinoqio.loadbalancer.server.port: '8000'
+
+# Traefik (in the n8n-compose-file stack) is the only ingress on this box; joining its network makes the
+# container routable. Declared external so this file never owns or recreates it.
+networks:
+  default:
+    name: n8n-compose-file_default
+    external: true
