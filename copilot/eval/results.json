@@ -1,0 +1,1355 @@
+[
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 1,
+    "text": "Thanks for joining. Your renewal is 48 thousand dollars a year for 200 seats.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.206487417000062
+      ]
+    ]
+  },
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 3,
+    "text": "Well, the platform has grown a lot, and our whole team is really committed to customer success.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.411,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "The user asked for a specific reason for the price increase ('Why the jump?'), but the counterparty responded with a vague value proposition about platform growth and commitment rather than a breakdown of the cost increase."
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.099144084000727
+      ]
+    ]
+  },
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 5,
+    "text": "Let me be upfront, I misspoke earlier. The renewal is 52 thousand, because I forgot the new support tier.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.835,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Annual price: 48000 at 0:05, now 52000",
+      "Does not answer whether they can hold at 40k; instead raises the price to 52k."
+    ],
+    "models": [
+      "DeepSeek (fallback)",
+      "checked by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.001690916999905
+      ],
+      [
+        "nebius_fallback",
+        14.406158291999418
+      ],
+      [
+        "nebius_verify",
+        5.848198666999451
+      ]
+    ]
+  },
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 7,
+    "text": "Yes, premium support is included, with a four hour response time.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        7.082924333999472
+      ]
+    ]
+  },
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 9,
+    "text": "A two year term. The price is 52 thousand a year, locked.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.5,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Annual price: 48 thousand at 0:05, now 52 thousand"
+    ],
+    "models": [
+      "Gemma 4",
+      "checked by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.02178370799993
+      ],
+      [
+        "nebius_verify",
+        3.5620385830006853
+      ]
+    ]
+  },
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 11,
+    "text": "Right, so for the two year term it is 58 thousand a year.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.95,
+    "interject": true,
+    "chips": [
+      "Said \"52 thousand a year\", now \"58 thousand a year\"",
+      "Annual price: 52000 at 0:45, now 58000"
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.6272956669999985
+      ],
+      [
+        "nebius_verify",
+        2.799589709000429
+      ]
+    ]
+  },
+  {
+    "scenario": "01_saas_renewal",
+    "uid": 13,
+    "text": "We never include premium support, it has always been a paid add-on.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.872,
+    "contradiction_conf": 0.98,
+    "interject": true,
+    "chips": [
+      "Said \"premium support is included\", now \"We never include premium support\""
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.328759166999589
+      ],
+      [
+        "nebius_verify",
+        2.3545483340003557
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 1,
+    "text": "My day rate is 600 euros, and I'm booked from the first of March.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.4867493749998175
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 3,
+    "text": "Six weeks is fine. I can start the first of March.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.0919825829996626
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 5,
+    "text": "Oh, I have a lot of happy clients, my work speaks for itself, you know how it is.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.505,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "The user asked for a specific reference/name, but the counterparty responded with a vague generalization about client satisfaction without naming anyone.",
+      "Hedging: you know how it is"
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.581666875000337
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 7,
+    "text": "Yes, it's just me, I don't subcontract anything.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.391887042000235
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 9,
+    "text": "Six hundred euros a day, as I said.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        3.8911226250002073
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 11,
+    "text": "Sure, though my rate for you is 750 euros a day now.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.95,
+    "interject": true,
+    "chips": [
+      "Said \"Six hundred euros a day\", now \"750 euros a day now\"",
+      "Day rate: 600 euros at 0:45, now 750 euros"
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.767714665999847
+      ],
+      [
+        "nebius_verify",
+        2.2559386659995653
+      ]
+    ]
+  },
+  {
+    "scenario": "02_freelance_rate",
+    "uid": 13,
+    "text": "Yes, my colleague will handle the design half, I've always worked with a partner.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.858,
+    "contradiction_conf": 0.95,
+    "interject": true,
+    "chips": [
+      "Said \"it's just me, I don't subcontract anything\", now \"Yes, my colleague will handle the design half\""
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        7.856226500000048
+      ],
+      [
+        "nebius_verify",
+        2.6188877499998853
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 1,
+    "text": "It's a 2019 hatchback with 62 thousand kilometres, asking 14,500 euros.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        8.001462750000428
+      ],
+      [
+        "nebius_fallback_fail",
+        3.1733735000007073
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 3,
+    "text": "No accidents at all, one owner, full service history.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        7.512485459000345
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 5,
+    "text": "I mean, a car like this, people are always asking, there's a lot of interest this week.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.555,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Does not answer whether the price is negotiable; pivots to claimed buyer interest instead.",
+      "Hedging: I mean, always, a lot of interest"
+    ],
+    "models": [
+      "DeepSeek (fallback)"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.00154620900048
+      ],
+      [
+        "nebius_fallback",
+        3.2377694999995583
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 7,
+    "text": "Of course. It has 62,000 on the clock, as the advert says.",
+    "truth": "honest",
+    "pred": "evasion",
+    "probability": 0.45,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "The user asked to see the service book, but the counterparty responded with the mileage instead of confirming when/how it can be viewed."
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.126334749999842
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 9,
+    "text": "Fourteen and a half thousand, same as I said.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.331873375000214
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 11,
+    "text": "Fine, but the mileage is actually 85 thousand kilometres.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.97,
+    "interject": true,
+    "chips": [
+      "Said \"62,000 on the clock\", now \"mileage is actually 85 thousand kilometres\"",
+      "Mileage: 62,000 km at 0:35, now 85,000 km"
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.962525542000549
+      ],
+      [
+        "nebius_verify",
+        2.119844916999682
+      ]
+    ]
+  },
+  {
+    "scenario": "03_car_purchase",
+    "uid": 13,
+    "text": "It was in a crash two years ago, the front was repaired.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.872,
+    "contradiction_conf": 0.98,
+    "interject": true,
+    "chips": [
+      "Said \"No accidents at all\", now \"It was in a crash two years ago\""
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.26552858300056
+      ],
+      [
+        "nebius_verify",
+        2.3321619170001213
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 1,
+    "text": "The flat is 1,200 euros a month, utilities not included.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.755284042000312
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 3,
+    "text": "Around 150 a month, depends on the winter.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.168,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Hedging: Around, depends on"
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.935727332999704
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 5,
+    "text": "Oh, people move for all sorts of reasons, it's a very quiet building, truly lovely neighbours.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.435,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "The counterparty avoids answering the specific question about why the last tenant left, instead providing general positive descriptions of the building and neighbors.",
+      "Hedging: all sorts of reasons"
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        7.117827000000034
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 7,
+    "text": "Two months, so 2,400 euros.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.960868790999484
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 9,
+    "text": "Correction, I should have said earlier, the heating is separate. Rent stays 1,200.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.195930582999608
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 11,
+    "text": "Three months, that's 3,600 euros.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.5,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Deposit: 2,400 euros at 0:35, now 3,600 euros"
+    ],
+    "models": [
+      "DeepSeek (fallback)"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.0013840419997
+      ],
+      [
+        "nebius_fallback",
+        4.436403499999869
+      ],
+      [
+        "nebius_verify_fail",
+        10.624127957999917
+      ]
+    ]
+  },
+  {
+    "scenario": "04_rent",
+    "uid": 13,
+    "text": "Utilities are included in the rent, that is how it has always been.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.917,
+    "contradiction_conf": 0.98,
+    "interject": true,
+    "chips": [
+      "Said \"utilities not included\", now \"Utilities are included in the rent\"",
+      "Hedging: that is how it has always been"
+    ],
+    "models": [
+      "DeepSeek (fallback)",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        2.3436007500004052
+      ],
+      [
+        "nebius_fallback",
+        4.113777125000524
+      ],
+      [
+        "nebius_verify",
+        2.0961793329997818
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 1,
+    "text": "For the 500 units our price is 40 thousand euros, delivered in March.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.960652957999628
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 3,
+    "text": "We really focus on quality here, our customers are always happy and we are ISO certified.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.455,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "The counterparty completely ignored the specific question about the defect rate, instead providing vague qualitative statements about quality and certification."
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        3.843010999999933
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 5,
+    "text": "Yes, 40k for 500 units, that's fixed.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        3.6057561669995266
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 7,
+    "text": "Net 30 from delivery. One note: I said March, but customs means it is realistically the first week of April, sorry for not flagging it sooner.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.92,
+    "interject": true,
+    "chips": [
+      "Said \"For the 500 units our price is 40 thousand euros, delivered in March.\", now \"One note: I said March, but customs means it is realistically the first week of April, sorry for not flagging it sooner.\"",
+      "Delivery date: March at 0:05, now first week of April",
+      "Hedging: realistically"
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.2033774579995224
+      ],
+      [
+        "nebius_verify",
+        2.221837749999395
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 9,
+    "text": "For 500 units the price is 48 thousand euros.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.95,
+    "interject": true,
+    "chips": [
+      "Said \"40k for 500 units, that's fixed\", now \"48 thousand euros\"",
+      "Total price: 40000 euros at 0:25, now 48 thousand euros"
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.705619000000297
+      ],
+      [
+        "nebius_verify",
+        2.034432166999977
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 11,
+    "text": "Yes, everything is made in our own factory in Porto.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        3.817531916999542
+      ]
+    ]
+  },
+  {
+    "scenario": "05_supplier",
+    "uid": 13,
+    "text": "We don't have a factory, we source everything from third parties.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.877,
+    "contradiction_conf": 0.99,
+    "interject": true,
+    "chips": [
+      "Said \"everything is made in our own factory\", now \"We don't have a factory\""
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.459382459000153
+      ],
+      [
+        "nebius_verify",
+        6.652579707999394
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 1,
+    "text": "We're offering 95 thousand base, plus a 10 percent bonus.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        2.451946207999754
+      ],
+      [
+        "nebius_fallback_fail",
+        3.6713474580001275
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 3,
+    "text": "Fully remote, you can work from anywhere in the EU.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        2.0951347910004188
+      ],
+      [
+        "nebius_fallback_fail",
+        2.9740717919994495
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 5,
+    "text": "We're a very resilient company, the culture here is amazing, and everyone is so energised about the roadmap.",
+    "truth": "evasion",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        2.0753755830000955
+      ],
+      [
+        "nebius_fallback_fail",
+        4.2046565000000555
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 7,
+    "text": "I can do 100 thousand base. I should correct myself: the 10 percent bonus is target, not guaranteed.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        1.9572182920001069
+      ],
+      [
+        "nebius_fallback_fail",
+        3.110911832999591
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 9,
+    "text": "A hundred thousand, as I just said.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.5,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Base salary: 95 thousand at 0:05, now 100 thousand"
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        7.743981665999854
+      ],
+      [
+        "nebius_verify_fail",
+        3.4332806249994974
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 11,
+    "text": "The bonus is 5 percent, and base is 92 thousand.",
+    "truth": "number_drift",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        8.001379625000482
+      ],
+      [
+        "nebius_fallback_fail",
+        3.1998117909997745
+      ]
+    ]
+  },
+  {
+    "scenario": "06_hiring_offer",
+    "uid": 13,
+    "text": "No, the role is onsite in Berlin, remote was never on the table.",
+    "truth": "contradiction",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        2.9541586249997636
+      ],
+      [
+        "nebius_fallback_fail",
+        2.98109979200035
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 1,
+    "text": "We'd propose a 60/40 revenue split in your favour, with an exclusivity of 12 months.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        1.9737901250000505
+      ],
+      [
+        "nebius_fallback_fail",
+        3.100683624999874
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 3,
+    "text": "We have around 300 active accounts in that segment.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [],
+    "calls": [
+      [
+        "gemma_fail",
+        2.0939914579994365
+      ],
+      [
+        "nebius_fallback_fail",
+        3.144997625000542
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 5,
+    "text": "Look, the market is moving so fast, everybody is asking about this category, it's really exciting times.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.622,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "ME asked how many accounts have actually bought a similar product; THEM pivots to market excitement and gives no number.",
+      "Hedging: Look, so fast, everybody, really exciting times"
+    ],
+    "models": [
+      "DeepSeek (fallback)"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        2.099166209000032
+      ],
+      [
+        "nebius_fallback",
+        3.328453124999214
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 7,
+    "text": "Sixty percent to you, forty to us, like I said.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "DeepSeek (fallback)"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        1.9516109579999465
+      ],
+      [
+        "nebius_fallback",
+        3.3018615410001075
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 9,
+    "text": "Yes, twelve months. Actually, a quick correction to what I said, it's 300 accounts but only about 120 are active.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.55,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Active accounts: 300 at 0:15, now 120"
+    ],
+    "models": [
+      "DeepSeek (fallback)",
+      "checked by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.001177500000267
+      ],
+      [
+        "nebius_fallback",
+        6.285888458000045
+      ],
+      [
+        "nebius_verify",
+        2.2629316669999753
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 11,
+    "text": "It would be 50/50 on revenue, and exclusivity is 24 months.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.95,
+    "interject": true,
+    "chips": [
+      "Said \"Sixty percent to you, forty to us, like I said.\", now \"It would be 50/50 on revenue, and exclusivity is 24 months.\"",
+      "Revenue split: 60/40 at 0:35, now 50/50"
+    ],
+    "models": [
+      "DeepSeek (fallback)",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.007411250000587
+      ],
+      [
+        "nebius_fallback",
+        6.713167791999695
+      ],
+      [
+        "nebius_verify",
+        2.664265291999982
+      ]
+    ]
+  },
+  {
+    "scenario": "07_partnership",
+    "uid": 13,
+    "text": "Of course, the exclusivity doesn't bind us at all, we can work with anyone.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.858,
+    "contradiction_conf": 0.95,
+    "interject": true,
+    "chips": [
+      "Said \"exclusivity is 24 months\", now \"the exclusivity doesn't bind us at all\""
+    ],
+    "models": [
+      "DeepSeek (fallback)",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.001560082999276
+      ],
+      [
+        "nebius_fallback",
+        5.915629374999298
+      ],
+      [
+        "nebius_verify",
+        13.874984832999871
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 1,
+    "text": "Our policy allows a full refund within 30 days of purchase.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.318644207999569
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 3,
+    "text": "Then you qualify. I can refund the 240 euros to your card.",
+    "truth": "honest",
+    "pred": "honest",
+    "probability": 0.119,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.333935874999952
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 5,
+    "text": "These things are handled by a different team, and there are a lot of factors, you know how banks are.",
+    "truth": "evasion",
+    "pred": "evasion",
+    "probability": 0.485,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "The user asked for a specific timeframe ('How long will that take?'), but the counterparty responded with a general explanation of why it's complicated instead of providing an estimate.",
+      "Hedging: there are a lot of factors, you know how banks are"
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        4.799708374999682
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 7,
+    "text": "Five business days. I should note I misspoke on the amount: 240 minus a 20 euro handling fee, so 220.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.5,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Refund amount: 240 euros at 0:15, now 220 euros"
+    ],
+    "models": [
+      "DeepSeek (fallback)"
+    ],
+    "calls": [
+      [
+        "gemma_fail",
+        8.001726165999571
+      ],
+      [
+        "nebius_fallback",
+        4.305726124999637
+      ],
+      [
+        "nebius_verify_fail",
+        3.0057358750000276
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 9,
+    "text": "Yes, 220 euros, five business days.",
+    "truth": "honest",
+    "pred": "number_drift",
+    "probability": 0.5,
+    "contradiction_conf": 0.0,
+    "interject": false,
+    "chips": [
+      "Refund amount: 240 euros at 0:15, now 220 euros"
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        6.6271325419993445
+      ],
+      [
+        "nebius_verify_fail",
+        2.9787268749996656
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 11,
+    "text": "Sure, though it will take 15 business days and the refund is 180 euros.",
+    "truth": "number_drift",
+    "pred": "number_drift",
+    "probability": 0.95,
+    "contradiction_conf": 0.98,
+    "interject": true,
+    "chips": [
+      "Said \"220 euros, five business days\", now \"it will take 15 business days and the refund is 180 euros\"",
+      "Refund amount: 220 euros at 0:45, now 180 euros"
+    ],
+    "models": [
+      "Gemma 4",
+      "verified by DeepSeek"
+    ],
+    "calls": [
+      [
+        "gemma",
+        7.325518583000303
+      ],
+      [
+        "nebius_verify",
+        2.447563833999993
+      ]
+    ]
+  },
+  {
+    "scenario": "08_refund",
+    "uid": 13,
+    "text": "We have no refund policy at all, everything is final sale.",
+    "truth": "contradiction",
+    "pred": "contradiction",
+    "probability": 0.769,
+    "contradiction_conf": 0.8,
+    "interject": false,
+    "chips": [
+      "Said \"Our policy allows a full refund within 30 days\", now \"We have no refund policy at all\""
+    ],
+    "models": [
+      "Gemma 4"
+    ],
+    "calls": [
+      [
+        "gemma",
+        5.790304666999873
+      ],
+      [
+        "nebius_verify_fail",
+        3.126696833999631
+      ]
+    ]
+  }
+]

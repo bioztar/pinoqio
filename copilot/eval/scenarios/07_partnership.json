@@ -1,0 +1,19 @@
+{
+  "id": "07_partnership",
+  "domain": "Partnership",
+  "lines": [
+    {"speaker": "them", "text": "We'd propose a 60/40 revenue split in your favour, with an exclusivity of 12 months.", "label": "honest"},
+    {"speaker": "me", "text": "How many customers could you bring us?"},
+    {"speaker": "them", "text": "We have around 300 active accounts in that segment.", "label": "honest"},
+    {"speaker": "me", "text": "How many have actually bought a product like ours before?"},
+    {"speaker": "them", "text": "Look, the market is moving so fast, everybody is asking about this category, it's really exciting times.", "label": "evasion"},
+    {"speaker": "me", "text": "Let's go back to the split."},
+    {"speaker": "them", "text": "Sixty percent to you, forty to us, like I said.", "label": "honest"},
+    {"speaker": "me", "text": "And exclusivity, twelve months?"},
+    {"speaker": "them", "text": "Yes, twelve months. Actually, a quick correction to what I said, it's 300 accounts but only about 120 are active.", "label": "honest"},
+    {"speaker": "me", "text": "OK, and the split is 60/40 for us?"},
+    {"speaker": "them", "text": "It would be 50/50 on revenue, and exclusivity is 24 months.", "label": "number_drift"},
+    {"speaker": "me", "text": "Are you free to partner with our competitors during that period?"},
+    {"speaker": "them", "text": "Of course, the exclusivity doesn't bind us at all, we can work with anyone.", "label": "contradiction"}
+  ]
+}

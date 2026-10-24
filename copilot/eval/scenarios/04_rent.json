@@ -1,0 +1,19 @@
+{
+  "id": "04_rent",
+  "domain": "Rent",
+  "lines": [
+    {"speaker": "them", "text": "The flat is 1,200 euros a month, utilities not included.", "label": "honest"},
+    {"speaker": "me", "text": "What are utilities usually?"},
+    {"speaker": "them", "text": "Around 150 a month, depends on the winter.", "label": "honest"},
+    {"speaker": "me", "text": "Why did the last tenant leave?"},
+    {"speaker": "them", "text": "Oh, people move for all sorts of reasons, it's a very quiet building, truly lovely neighbours.", "label": "evasion"},
+    {"speaker": "me", "text": "How much is the deposit?"},
+    {"speaker": "them", "text": "Two months, so 2,400 euros.", "label": "honest"},
+    {"speaker": "me", "text": "So rent is 1,200?"},
+    {"speaker": "them", "text": "Correction, I should have said earlier, the heating is separate. Rent stays 1,200.", "label": "honest"},
+    {"speaker": "me", "text": "And the deposit once more?"},
+    {"speaker": "them", "text": "Three months, that's 3,600 euros.", "label": "number_drift"},
+    {"speaker": "me", "text": "So what exactly is covered by the rent?"},
+    {"speaker": "them", "text": "Utilities are included in the rent, that is how it has always been.", "label": "contradiction"}
+  ]
+}

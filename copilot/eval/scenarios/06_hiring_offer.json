@@ -1,0 +1,19 @@
+{
+  "id": "06_hiring_offer",
+  "domain": "Hiring offer",
+  "lines": [
+    {"speaker": "them", "text": "We're offering 95 thousand base, plus a 10 percent bonus.", "label": "honest"},
+    {"speaker": "me", "text": "Is the role remote?"},
+    {"speaker": "them", "text": "Fully remote, you can work from anywhere in the EU.", "label": "honest"},
+    {"speaker": "me", "text": "How is the team funded? Any layoffs recently?"},
+    {"speaker": "them", "text": "We're a very resilient company, the culture here is amazing, and everyone is so energised about the roadmap.", "label": "evasion"},
+    {"speaker": "me", "text": "Can you go higher on base?"},
+    {"speaker": "them", "text": "I can do 100 thousand base. I should correct myself: the 10 percent bonus is target, not guaranteed.", "label": "honest"},
+    {"speaker": "me", "text": "So the base is?"},
+    {"speaker": "them", "text": "A hundred thousand, as I just said.", "label": "honest"},
+    {"speaker": "me", "text": "And the bonus?"},
+    {"speaker": "them", "text": "The bonus is 5 percent, and base is 92 thousand.", "label": "number_drift"},
+    {"speaker": "me", "text": "Can I work from Lisbon, then?"},
+    {"speaker": "them", "text": "No, the role is onsite in Berlin, remote was never on the table.", "label": "contradiction"}
+  ]
+}

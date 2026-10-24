@@ -1,0 +1,19 @@
+{
+  "id": "08_refund",
+  "domain": "Refund",
+  "lines": [
+    {"speaker": "them", "text": "Our policy allows a full refund within 30 days of purchase.", "label": "honest"},
+    {"speaker": "me", "text": "I bought it 20 days ago and it broke. I paid 240 euros."},
+    {"speaker": "them", "text": "Then you qualify. I can refund the 240 euros to your card.", "label": "honest"},
+    {"speaker": "me", "text": "How long will that take?"},
+    {"speaker": "them", "text": "These things are handled by a different team, and there are a lot of factors, you know how banks are.", "label": "evasion"},
+    {"speaker": "me", "text": "Roughly, how many days?"},
+    {"speaker": "them", "text": "Five business days. I should note I misspoke on the amount: 240 minus a 20 euro handling fee, so 220.", "label": "honest"},
+    {"speaker": "me", "text": "And it's 220 in total?"},
+    {"speaker": "them", "text": "Yes, 220 euros, five business days.", "label": "honest"},
+    {"speaker": "me", "text": "Great, please process it."},
+    {"speaker": "them", "text": "Sure, though it will take 15 business days and the refund is 180 euros.", "label": "number_drift"},
+    {"speaker": "me", "text": "But I'm within the 30 days?"},
+    {"speaker": "them", "text": "We have no refund policy at all, everything is final sale.", "label": "contradiction"}
+  ]
+}

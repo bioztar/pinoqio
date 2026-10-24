@@ -7,6 +7,7 @@
 - 2026-10-24 13:45 face: server, UI (Pinocchio nose hero), window, fake source, app entry done, PR open. Next: wire live/replay once ears+brain merge. Blockers: none.
 - Blockers: none.
 - 2026-10-24 14:50 brand: logo favicon/apple-touch/og+twitter cover, web bar logo, macOS Dock icon, /static route in PR. Next: review.
+- 2026-10-24 eval: 8 scripted negotiations + `copilot/scripts/run_eval.py` + `copilot/eval/report.md` (real run: 80% exact label, 25% false alarm on honest lines, Gemma 19/56 calls over 8 s budget or errored). PR open.
 - 2026-10-24 web: demo LIVE at https://pinoqio.pro7ocol.com. Try live (passcode-gated /live ws, mic + tab audio) in PR; needs .env on VPS with keys + PINOQIO_LIVE_PASSCODE.
 - 2026-10-24 13:45 voice+demo: voice.py (TTS + policy), demo/script.md, replay wavs (114 s), smoke_voice OK; PR open. Next: none, awaiting review.
 - 2026-10-24 brain: config (PR #4) + Gemma analyst/scorer/brain.py done, smoke run OK (~5 s/call with thinking_level MINIMAL). Next: review/merge brain PR.
