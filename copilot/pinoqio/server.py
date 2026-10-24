@@ -9,6 +9,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from pinoqio.events import Utterance, Verdict
@@ -91,6 +92,7 @@ def create_app(
 
     app = FastAPI(lifespan=lifespan)
     app.state.hub = hub
+    app.mount("/static", StaticFiles(directory=UI_FILE.parent / "static"), name="static")
 
     @app.get("/", response_class=HTMLResponse)
     async def index() -> str:
