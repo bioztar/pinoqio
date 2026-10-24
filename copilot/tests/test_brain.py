@@ -27,7 +27,10 @@ def raising(exc):
 
 async def collect(ask, fallback=None, verify_ask=None):
     fallback = fallback or raising(RuntimeError("no fallback"))
-    return [x async for x in verdicts(stream(UTTS), ask, fallback, verify_ask)]
+    out = [x async for x in verdicts(stream(UTTS), ask, fallback, verify_ask)]
+    # Model verdicts arrive from a background worker, so an utterance can overtake the previous
+    # line's verdict; put each verdict right after its utterance for position-based asserts.
+    return sorted(out, key=lambda x: (x.id, 0) if isinstance(x, Utterance) else (x.utterance_id, 1))
 
 
 def models(v):
@@ -148,3 +151,27 @@ async def test_verifier_failure_caps_gemma_contradiction():
     out = await collect(ask, verify_ask=raising(RuntimeError("down")))
     assert out[4].contradiction.confidence == 0.8
     assert models(out[4]) == ["Gemma 4"]
+
+
+async def test_instant_check_does_not_wait_for_the_previous_lines_model():
+    gate = asyncio.Event()
+
+    async def slow_ask(prompt, system):
+        await gate.wait()  # the model never answers until released
+        return {}
+
+    utts = [
+        Utterance(1, "me", "What is the price?", 0, 1),
+        Utterance(2, "them", "It's 900 euros each.", 1, 3),
+        Utterance(3, "me", "And the total price?", 4, 5),
+        Utterance(4, "them", "Sure, 1,050 plus delivery.", 5, 7),
+    ]
+    gen = verdicts(stream(utts), slow_ask, slow_ask)
+    got = []
+    async for x in gen:
+        got.append(x)
+        if isinstance(x, Verdict) and any(c.kind == "number_drift" for c in x.chips):
+            break
+    gate.set()
+    await gen.aclose()
+    assert any(isinstance(x, Verdict) and x.utterance_id == 4 for x in got)
