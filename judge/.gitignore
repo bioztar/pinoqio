@@ -1,0 +1,4 @@
+# Plata's dataset and our run logs stay local: the repo is public
+data/
+runs/
+.venv/
