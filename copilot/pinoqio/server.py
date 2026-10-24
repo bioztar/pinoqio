@@ -17,6 +17,7 @@ from pinoqio.summary import Summary, summarize
 
 log = logging.getLogger("pinoqio.server")
 UI_FILE = Path(__file__).parent / "ui" / "index.html"
+ART_DIR = Path(__file__).resolve().parents[2] / "shared" / "pinoqio-art"  # partner's scene player
 
 
 def to_json(event: Utterance | Verdict | Summary) -> dict:
@@ -93,6 +94,8 @@ def create_app(
     app = FastAPI(lifespan=lifespan)
     app.state.hub = hub
     app.mount("/static", StaticFiles(directory=UI_FILE.parent / "static"), name="static")
+    if ART_DIR.is_dir():  # repo checkout only; the web image has no shared/
+        app.mount("/art", StaticFiles(directory=ART_DIR), name="art")
 
     @app.get("/", response_class=HTMLResponse)
     async def index() -> str:
