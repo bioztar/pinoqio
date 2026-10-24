@@ -43,6 +43,7 @@ def test_index_interject_and_ws_replay():
     with TestClient(create_app(source, interject=sent.append)) as client:
         assert "Pinoqio" in client.get("/").text
         assert all(client.get(f"/static/nose/{i}.webp").status_code == 200 for i in range(5))
+        assert client.get("/art/index.html").status_code == 200  # partner's scene player (repo checkout)
         assert client.post("/interject", json={"text": "hello"}).json() == {"ok": True}
         assert sent == ["hello"]
         with client.websocket_connect("/ws") as ws:
