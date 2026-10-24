@@ -46,3 +46,8 @@ def test_ask_next_used_when_short_else_fallback():
     assert cue_for(verdict(0.7, ask="Why the new price?")) == "Why the new price?"
     long_ask = "Could you please explain in detail why the price moved so much"
     assert cue_for(verdict(0.7, ask=long_ask)) == "Possible bluff. Probe that."
+
+
+def test_module_hooks_exist_for_app_and_server():
+    from pinoqio import voice
+    assert callable(voice.on_verdict) and callable(voice.interject)

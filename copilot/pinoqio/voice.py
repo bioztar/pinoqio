@@ -182,3 +182,23 @@ class Voice:
             self._state = new_state
             self.whisper(action.text)
         return action
+
+
+# Module-level hooks used by app.py (auto policy) and server.py (the "Say it" button).
+# ponytail: one process-wide Voice; per-session state resets only on restart.
+_voice: Voice | None = None
+
+
+def _shared() -> Voice:
+    global _voice
+    if _voice is None:
+        _voice = Voice()
+    return _voice
+
+
+def on_verdict(v: Verdict) -> Action | None:
+    return _shared().on_verdict(v)
+
+
+def interject(text: str, force: bool = False) -> "asyncio.Task | None":
+    return _shared().interject(text, force)
