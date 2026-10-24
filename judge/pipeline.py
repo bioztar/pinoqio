@@ -18,8 +18,8 @@ from pathlib import Path
 
 import gemma
 
-TEACHER = os.environ.get("JUDGE_TEACHER_MODEL", gemma.STRONG)
-JUDGE = os.environ.get("JUDGE_MODEL", gemma.STRONG)
+TEACHER = os.environ.get("JUDGE_TEACHER_MODEL", gemma.FAST)
+JUDGE = os.environ.get("JUDGE_MODEL", gemma.FAST)
 WORKERS = int(os.environ.get("JUDGE_WORKERS", "6"))
 
 
@@ -51,6 +51,54 @@ def parse_json(text):
     if not m:
         raise ValueError("no JSON in model output")
     return json.loads(m.group(0))
+
+
+def example_text(item):
+    q = " ".join(m["content"] for m in item["conversation"] if m["role"] == "user")
+    return f"{q} || {last_reply(item, 600)}"
+
+
+class Precedents:
+    """Nearest expert-labeled training conversations of the same topic (TF-IDF, local, no API calls)."""
+
+    def __init__(self, examples, per_label=2):
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        self.per_label = per_label
+        self.by_topic = {}
+        for topic in {e["topic"] for e in examples}:
+            rows = [e for e in examples if e["topic"] == topic]
+            vec = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), sublinear_tf=True)
+            self.by_topic[topic] = (rows, vec, vec.fit_transform([e["text"] for e in rows]))
+
+    def nearest(self, item, k=5):
+        if item["topic"] not in self.by_topic:
+            return []
+        rows, vec, matrix = self.by_topic[item["topic"]]
+        sims = (matrix @ vec.transform([example_text(item)]).T).toarray().ravel()
+        return [rows[i] for i in sims.argsort()[::-1] if rows[i]["item_id"] != item["item_id"]][:k]
+
+    def find(self, item):
+        if item["topic"] not in self.by_topic:
+            return []
+        rows, vec, matrix = self.by_topic[item["topic"]]
+        sims = (matrix @ vec.transform([example_text(item)]).T).toarray().ravel()
+        order = sims.argsort()[::-1]
+        picked = {"bad": [], "good": []}
+        for i in order:
+            e = rows[i]
+            if e["item_id"] != item["item_id"] and len(picked[e["label"]]) < self.per_label:
+                picked[e["label"]].append(e)
+        return picked["bad"] + picked["good"]
+
+
+def precedent_block(found):
+    if not found:
+        return ""
+    lines = []
+    for e in found:
+        why = f" | expert's objection: {e['violation']}" if e["label"] == "bad" and e.get("violation") else ""
+        lines.append(f"- expert label {e['label'].upper()}: {e['text'][:700]}{why}")
+    return "SIMILAR TRAINING CONVERSATIONS ALREADY LABELED BY THE EXPERT (precedents):\n" + "\n".join(lines) + "\n\nCONVERSATION TO GRADE:\n"
 
 
 def pmap(fn, items):
@@ -101,6 +149,29 @@ def merge_topic(topic, explained, goods):
     return out
 
 
+BOUNDARY_SYSTEM = (
+    "You get training conversations where a rule-based judge disagreed with the expert's label, with the judge's "
+    "reasoning. Describe 1-3 concrete CONDITIONS under which the expert's labels are hard to predict or look "
+    "inconsistent (e.g. 'short replies that omit X were labeled both ways'). Each condition must cite the item ids "
+    'it is based on. JSON only: {"boundaries": [{"condition": "<one sentence>", "items": ["<item_id>", ...]}]}'
+)
+
+
+def summarize_boundaries(misses, by_id):
+    """Turns raw disagreements into named conditions with evidence (jury criterion: clear boundaries)."""
+    if not misses:
+        return []
+    lines = "\n".join(f"- [{m['item_id']}] topic {m['topic']}, expert {m['expert']}, judge {m['judge']}. "
+                      f"Q: {first_question(by_id[m['item_id']])} | A: {last_reply(by_id[m['item_id']], 300)} | judge: {m['judge_reason']}"
+                      for m in misses)
+    try:
+        out = parse_json(gemma.ask(lines, model=TEACHER, system=BOUNDARY_SYSTEM)["text"])
+        return [b for b in out.get("boundaries", []) if b.get("condition")]
+    except Exception as e:
+        print(f"boundaries: {type(e).__name__}", file=sys.stderr)
+        return []
+
+
 def adapt(train_path, artifacts):
     artifacts = Path(artifacts)
     artifacts.mkdir(parents=True, exist_ok=True)
@@ -111,6 +182,11 @@ def adapt(train_path, artifacts):
     explained = pmap(explain_bad, [t for t in train if t["label"] == "bad"])
     (artifacts / "violations.jsonl").write_text("\n".join(json.dumps(e, ensure_ascii=False) for e in explained), encoding="utf-8")
     print(f"explained {len(explained)} bad examples", file=sys.stderr)
+    # Precedent store for eval: every labeled training conversation, with the expert's objection for bad ones
+    why = {e["item_id"]: e.get("violation", "") for e in explained}
+    examples = [{"item_id": t["item_id"], "topic": t["topic"], "label": t["label"], "text": example_text(t),
+                 "violation": why.get(t["item_id"], "")} for t in train]
+    (artifacts / "examples.jsonl").write_text("\n".join(json.dumps(e, ensure_ascii=False) for e in examples), encoding="utf-8")
 
     def merge(topic):
         return topic, merge_topic(topic, [e for e in explained if e["topic"] == topic],
@@ -121,19 +197,25 @@ def adapt(train_path, artifacts):
         for rule in book["rules"]:
             rule["evidence"] = [i for i in rule.get("evidence", []) if i in by_id]
     (artifacts / "rulebook.json").write_text(json.dumps(rulebook, ensure_ascii=False, indent=2), encoding="utf-8")
+    # The exact system prompt eval will send for each topic: proof that the explained rules are the ones in use
+    (artifacts / "prompts").mkdir(exist_ok=True)
+    for topic in topics:
+        (artifacts / "prompts" / f"{topic}.txt").write_text(build_system(topic, rulebook), encoding="utf-8")
     print("rulebook written", file=sys.stderr)
 
     # Self-check on train: where does the learned judge still disagree with the expert? -> boundaries for the jury.
     # A fixed, topic-balanced sample keeps adapt within minutes on a slow API.
     per_topic = int(os.environ.get("JUDGE_SELF_CHECK_PER_TOPIC", "12"))
     sample = [t for topic in topics for t in [x for x in train if x["topic"] == topic][:per_topic]]
-    preds = dict(pmap(lambda t: judge_item(t, rulebook), sample))
+    precedents = load_precedents(artifacts)
+    preds = dict(pmap(lambda t: judge_item(t, rulebook, precedents), sample))
     misses = [{"item_id": t["item_id"], "topic": t["topic"], "expert": t["label"], "judge": preds[t["item_id"]]["label"],
                "judge_reason": preds[t["item_id"]].get("reason", "")} for t in sample if preds[t["item_id"]]["label"] != t["label"]]
-    rulebook["self_check"] = {"train_size": len(sample), "agree": len(sample) - len(misses), "disagreements": misses}
+    rulebook["self_check"] = {"train_size": len(sample), "agree": len(sample) - len(misses), "disagreements": misses,
+                              "boundaries": summarize_boundaries(misses, by_id)}
     (artifacts / "rulebook.json").write_text(json.dumps(rulebook, ensure_ascii=False, indent=2), encoding="utf-8")
     (artifacts / "explanation.md").write_text(render_explanation(rulebook, by_id), encoding="utf-8")
-    print(f"self-check: {len(train) - len(misses)}/{len(train)} agree with the expert", file=sys.stderr)
+    print(f"self-check: {len(sample) - len(misses)}/{len(sample)} agree with the expert", file=sys.stderr)
 
 
 # ---------- eval ----------
@@ -158,9 +240,10 @@ def build_system(topic, rulebook):
     return JUDGE_SYSTEM.format(topic=topic, rules=rules_text(book), good=book.get("good_looks_like", ""))
 
 
-def judge_item(item, rulebook):
+def judge_item(item, rulebook, precedents=None):
     try:
-        r = gemma.ask(f"Topic: {item['topic']}\n\n{item_text(item)}", model=JUDGE, system=build_system(item["topic"], rulebook))
+        prefix = precedent_block(precedents.find(item)) if precedents and USE_PRECEDENTS else ""
+        r = gemma.ask(f"{prefix}Topic: {item['topic']}\n\n{item_text(item)}", model=JUDGE, system=build_system(item["topic"], rulebook))
         try:
             out = parse_json(r["text"])
         except ValueError:  # the model occasionally answers in prose; read the verdict from the text
@@ -170,13 +253,25 @@ def judge_item(item, rulebook):
         return item["item_id"], {"label": label, "reason": out.get("reason", ""), "violated": out.get("violated", [])}
     except Exception as e:  # never drop an item: the scorer rejects missing ids
         print(f"{item['item_id']}: {type(e).__name__} {str(e)[:80]}", file=sys.stderr)
-        return item["item_id"], {"label": "good", "reason": "fallback after error", "violated": []}
+        # API failed after all retries: take the majority label of the most similar expert-labeled conversations
+        sims = [e["label"] for e in (precedents.nearest(item) if precedents else [])]
+        label = "bad" if sims.count("bad") > sims.count("good") else "good"
+        return item["item_id"], {"label": label, "reason": "fallback after API error: label of similar training examples", "violated": []}
+
+
+def load_precedents(artifacts):
+    path = Path(artifacts) / "examples.jsonl"
+    return Precedents(read_jsonl(path)) if path.exists() else None
+
+
+USE_PRECEDENTS = os.environ.get("JUDGE_PRECEDENTS", "0") == "1"
 
 
 def evaluate(test_path, artifacts, out_path):
     rulebook = json.loads((Path(artifacts) / "rulebook.json").read_text(encoding="utf-8"))
+    precedents = load_precedents(artifacts)
     test = read_jsonl(test_path)
-    preds = dict(pmap(lambda t: judge_item(t, rulebook), test))
+    preds = dict(pmap(lambda t: judge_item(t, rulebook, precedents), test))
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", newline="", encoding="utf-8") as f:
@@ -197,7 +292,7 @@ def render_explanation(rulebook, by_id):
         "",
         "Generated automatically by `adapt` from the labeled training set. The rules below are inserted verbatim "
         "into the prompt that `eval` uses for every test conversation (see `rulebook.json`, field `topics`, and "
-        "`JUDGE_SYSTEM` in `pipeline.py`), so this document is the working model, not a separate summary.",
+        "the exact per-topic prompts in `prompts/<topic>.txt`), so this document is the working model, not a separate summary.",
         "",
         "## Decision procedure",
         "",
@@ -209,6 +304,13 @@ def render_explanation(rulebook, by_id):
         "4. No violation: `good`.",
         "",
     ]
+    if USE_PRECEDENTS:
+        lines += ["Together with the rules, the judge sees the 2 most similar `bad` and 2 most similar `good` training "
+                  "conversations of the same topic (character n-gram TF-IDF over the question and the reply, stored in "
+                  "`examples.jsonl`), with the expert's objection for the `bad` ones. They are precedents for borderline "
+                  "cases; the rules above stay the decision criteria.", ""]
+    lines += ["If the model API fails on a conversation after all retries, its label falls back to the majority "
+              "label of the 5 most similar training conversations of the same topic (`examples.jsonl`).", ""]
     for topic, book in rulebook["topics"].items():
         lines += [f"## Topic: {topic}", "", f"**A good reply:** {book.get('good_looks_like', '')}", "",
                   "| Rule | Priority | Rule text | Why the expert cares |", "|---|---|---|---|"]
@@ -219,6 +321,11 @@ def render_explanation(rulebook, by_id):
             for iid in r.get("evidence", [])[:2]:
                 ex = by_id[iid]
                 lines.append(f"- **{r['id']}** · `{iid}` · Q: “{first_question(ex)}” · A: “{last_reply(ex)}”")
+        goods = [t for t in by_id.values() if t["topic"] == topic and t["label"] == "good"][:2]
+        if goods:
+            lines += ["", "**What the expert accepts** (expert label: `good`, no rule above is broken):", ""]
+            for ex in goods:
+                lines.append(f"- `{ex['item_id']}` · Q: “{first_question(ex)}” · A: “{last_reply(ex)}”")
         lines.append("")
     sc = rulebook.get("self_check")
     if sc:
@@ -226,6 +333,11 @@ def render_explanation(rulebook, by_id):
                   f"Re-judging the training set with these rules agrees with the expert on **{sc['agree']} of {sc['train_size']}** conversations. "
                   "The disagreements below mark where the expert's rules are not fully captured, or where similar "
                   "conversations received different labels. Treat predictions on similar cases as less certain.", ""]
+        for b in sc.get("boundaries", []):
+            ids = ", ".join(f"`{i}`" for i in b.get("items", []) if i in by_id)
+            lines.append(f"- **Condition:** {b['condition']} Examples: {ids or '—'}.")
+        if sc.get("boundaries"):
+            lines += ["", "All disagreements:", ""]
         for m in sc["disagreements"][:20]:
             ex = by_id[m["item_id"]]
             lines.append(f"- `{m['item_id']}` ({m['topic']}) expert **{m['expert']}**, judge {m['judge']}. "

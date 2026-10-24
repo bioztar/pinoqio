@@ -35,6 +35,16 @@ def stats(gold, pred, topic_of):
     }
 
 
+def in_numbers(row, lang):
+    """One plain sentence with the real figures, so the stage case is obvious without reading JSON."""
+    import gemma
+    prompt = (f"Customer data and conversation below. The expert labeled the bot's answer BAD. In ONE short sentence in {lang}, "
+              "using the concrete numbers from the customer data, say what the correct answer would be and how the bot's "
+              "answer differs. Plain words, no JSON.\n\n"
+              + json.dumps({"context": json.loads(row["context"]), "conversation": json.loads(row["conversation"])}, ensure_ascii=False))
+    return gemma.ask(prompt, model=gemma.FAST)["text"].strip()
+
+
 def render_value(v):
     if isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
         cols = list(dict.fromkeys(k for row in v for k in row))
@@ -92,6 +102,7 @@ def main(run_dir, base_dir, test_csv, out_path):
     rules = [(t, r) for t, b in rulebook["topics"].items() for r in b["rules"]]
     rule_text = {r["id"]: r["rule"] for _, r in rules}
     case_reason = reasons[case].get("reason", "")
+    numbers = in_numbers(test[case], "English")
 
     conv = json.loads(test[case]["conversation"])
     ctx = json.loads(test[case]["context"])
@@ -117,14 +128,15 @@ def main(run_dir, base_dir, test_csv, out_path):
         n_test=len(gold), n_train=rulebook.get("train_total", 150), n_rules=len(rules),
         bars=bars_svg(s0["by_topic"], s1["by_topic"]),
         case_topic=esc(TOPICS[topic_of[case]]), case_q=esc(first_question({"conversation": conv}, 200)),
-        dialog=dialog, ctx=ctx_html, violated=violated_html, case_reason=esc(case_reason),
+        dialog=dialog, ctx=ctx_html, violated=violated_html, case_reason=esc(case_reason), numbers=esc(numbers), pts0=f"{10 * s0['macro']:.1f}", pts1=f"{10 * s1['macro']:.1f}",
         rules=rules_html, check_note=(f" Re-checking {sc['train_size']} training conversations, the judge with these rules agrees with the expert in {sc['agree']}." if sc else ""), repo=REPO,
     )
     Path(out_path).write_text(page, encoding="utf-8")
     print(out_path)
 
 
-TEMPLATE = """<title>Pinoqio Judge</title>
+TEMPLATE = """<meta charset="utf-8">
+<title>Pinoqio Judge</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,6 +210,8 @@ table.ctx th {{ color: var(--muted); font-weight: 600; }}
 .v b {{ font: 700 1rem/1.2 var(--f-display); }}
 .v.bad {{ background: var(--bad-soft); color: var(--bad); }} .v.good {{ background: var(--good-soft); color: var(--good); }}
 .v .note {{ color: var(--ink); opacity: 0.75; font-size: 0.78rem; }}
+.numbers {{ margin: 0; font-size: 1.05rem; }}
+.numbers b {{ color: var(--wood); }}
 .caught {{ border-left: 3px solid var(--wood); padding-left: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; }}
 .caught ul {{ margin: 0; padding-left: 1rem; }}
 .rid {{ font: 600 0.75rem/1 var(--f-mono); color: var(--wood); background: var(--wood-soft); padding: 0.2rem 0.35rem; border-radius: 4px; white-space: nowrap; }}
@@ -222,6 +236,15 @@ pre {{ margin: 0; background: var(--surface); border: 1px solid var(--line); bor
   <h1>A judge that learns from the <span class="nose">expert</span></h1>
   <p class="lede">An expert marked {n_train} bank-bot conversations as good or bad. Pinoqio found the expert's rules in these marks by itself, and now checks new answers the way the expert would.</p>
 </header>
+
+<section>
+  <div class="tiles">
+    <div class="tile"><span class="eyebrow">Task</span><p>Plata's expert marks the bank bot's answers as good or bad. His rules are written nowhere.</p></div>
+    <div class="tile"><span class="eyebrow">Solution</span><p>Pinoqio reads the marks, writes the rules down, and judges like the expert. Every verdict names the rule.</p></div>
+    <div class="tile"><span class="eyebrow">Result</span><p>Misses half as many bad answers: {missed0} → {missed1} of {bad_total}.</p></div>
+  </div>
+  <p class="small">Plata's score (out of 12) on the public test: without training ≈ {pts0} (no explanation). Pinoqio: {pts1} for accuracy + up to 2.0 for the auto-generated explanation.</p>
+</section>
 
 <section>
   <span class="eyebrow">Result on {n_test} new conversations Pinoqio never saw</span>
@@ -262,6 +285,7 @@ pre {{ margin: 0; background: var(--surface); border: 1px solid var(--line); bor
       <div class="v good"><span class="who">Gemma without training</span><b>Good</b><span class="note">Missed the mistake</span></div>
       <div class="v bad"><span class="who">Pinoqio</span><b>Bad</b><span class="note">Caught it</span></div>
     </div>
+    <p class="numbers"><b>In numbers:</b> {numbers}</p>
     <div class="caught"><span class="eyebrow">Why Pinoqio said bad</span><p>{case_reason}</p><ul>{violated}</ul></div>
   </div>
 </section>
