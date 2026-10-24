@@ -1,5 +1,8 @@
 <p align="center">
   <img src="copilot/docs/img/options/A-cover-suit.png" alt="Pinoqio: a wooden puppet in a suit whose nose grows" width="720">
+
+<p align="center"><img src="copilot/docs/nose-grows.gif" width="320" alt="Pinoqio nose growing with the lie probability"></p>
+
 </p>
 
 # Pinoqio
