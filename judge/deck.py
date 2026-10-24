@@ -19,17 +19,17 @@ CASE_ID = None  # pin the stage case by item_id; default: first caught case in t
 
 
 LINES = [
-    "I'm listening. So far it all adds up. Suspiciously so.",
-    "A minute ago it was different. I'm not nitpicking, I just have a wooden memory.",
-    "Two versions of one story. You're not lying, you're shipping updates. Without a changelog.",
-    "Your story moves faster than the peso.",
-    "The deposit is refundable, then it isn't. That's not a contract, that's a series with an open ending.",
-    "I'd say 'I believe you', but my nose filed an appeal.",
-    "You can see my nose from Montjuïc. The tour guides added it to the route.",
-    "A sprout grew on my nose. Even nature thinks your story needs fertilizer.",
-    "A sparrow built a nest and took out a mortgage. Says there'll be no truth here for thirty years.",
+    "I'm listening.",
+    "A minute ago it was different.",
+    "Two truths in a row. Bold.",
+    "Your numbers jump faster than the peso.",
+    "Even Barça doesn't change the lineup this often.",
+    "My nose just filed an appeal.",
+    "You can see my nose from Montjuïc now.",
+    "Even the sprout is shocked.",
+    "The sparrow got a Plata card. He's staying.",
 ]
-LIE_BUTTON = "Lie again"
+LIE_BUTTON = "Pause"
 WORDS = ("contradiction", "contradictions")
 
 
@@ -45,7 +45,7 @@ def puppet(frames):
             + f'<img class="pf nose" src="data:image/jpeg;base64,{b64(f / "frame-8.jpg")}" alt="">')
     return f'''<div class="puppet" id="puppet">{imgs}<div class="tip" id="tip" hidden></div>
       <div class="pcount" id="pcount">0</div><div class="pbubble" id="pbubble"><p id="pline"></p></div></div>
-    <div class="pbar"><button type="button" id="plie">{esc(LIE_BUTTON)}</button><button type="button" id="preset">↺</button><span class="hint">click: the nose grows with every contradiction</span></div>
+    <div class="pbar"><button type="button" id="plie">{esc(LIE_BUTTON)}</button><button type="button" id="preset">↺</button><span class="hint">every caught contradiction grows the nose</span></div>
     <script>
     (() => {{
       const LINES = {json.dumps(LINES, ensure_ascii=False)};
@@ -61,11 +61,16 @@ def puppet(frames):
         P.querySelectorAll(".face").forEach(i => i.classList.toggle("on", +i.dataset.face === face));
         document.getElementById("pcount").textContent = n;
         document.getElementById("pline").textContent = LINES[n];
-        document.getElementById("plie").disabled = n === 8;
       }}
-      document.getElementById("plie").addEventListener("click", () => set(n + 1));
+      let paused = false;
+      const btn = document.getElementById("plie");
+      btn.addEventListener("click", () => {{ paused = !paused; btn.textContent = paused ? "▶" : {json.dumps(LIE_BUTTON, ensure_ascii=False)}; }});
       document.getElementById("preset").addEventListener("click", () => set(0));
       set(0);
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (still) set(8);
+      else setInterval(() => {{ if (!paused) set(n >= 8 ? (hold++ < 2 ? 8 : (hold = 0, 0)) : n + 1); }}, 2400);
+      let hold = 0;
     }})();
     </script>'''
 
@@ -170,7 +175,10 @@ def main(run_dir, base_dir, test_csv, out_path, hero=None):
     pts0, pts1 = round(10 * s0["macro"], 1), round(10 * s1["macro"], 1)
     labels_dots = "".join(f'<i class="{"g" if k < 90 else "r"}"></i>' for k in range(150))
 
-    page = TEMPLATE.format(
+    closing = ""
+    if hero and Path(hero).is_dir() and (Path(hero) / "frame-8.jpg").exists():
+        closing = f'<img class="closing" src="data:image/jpeg;base64,{b64(Path(hero) / "frame-8.jpg")}" alt="Pinoqio with the full-length nose, a sprout and a sparrow\'s nest, Barcelona at dusk">'
+    page = TEMPLATE.format(closing=closing, 
         hero=hero_tag, train_total=train_total, n_rules=len(rules), n_test=len(gold),
         before=pct(s0["macro"]), after=pct(s1["macro"]),
         missed0=s0["missed"], missed1=s1["missed"], bad_total=s1["bad_total"],
@@ -203,15 +211,16 @@ TEMPLATE = """<meta charset="utf-8">
   --display: "Cormorant Garamond", Georgia, serif; --body: "Golos Text", -apple-system, sans-serif; --mono: "JetBrains Mono", Menlo, monospace;
 }}
 * {{ box-sizing: border-box; }}
-html {{ scroll-snap-type: y mandatory; }}
-body {{ margin: 0; background: var(--bg); color: var(--ink); font: 400 18px/1.45 var(--body);
+html {{ scroll-snap-type: y mandatory; font-size: clamp(15px, 1.12vw, 23px); }}
+body {{ margin: 0; color: var(--ink); font: 400 1.05rem/1.45 var(--body);
+  background: radial-gradient(70vw 50vh at 88% 8%, rgba(212, 146, 79, 0.13), transparent 70%), radial-gradient(60vw 50vh at 5% 100%, rgba(79, 179, 166, 0.07), transparent 70%), var(--bg); background-attachment: fixed;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }}
 .slide {{ min-height: 100vh; scroll-snap-align: start; max-width: 1680px; margin: 0 auto; padding-block: 5vh 6vh;
   display: grid; grid-template-rows: auto 1fr auto; gap: 3vh; }}
-.kicker {{ font: 500 0.8rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }}
+.kicker {{ border-bottom: 1px solid var(--line); padding-bottom: 1rem; font: 500 0.8rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }}
 .kicker b {{ color: var(--teal); font-weight: 500; }}
 .visual {{ display: flex; flex-direction: column; justify-content: center; gap: 2.5vh; min-width: 0; }}
-.say {{ font: 600 clamp(1.7rem, 3.6vw, 3rem)/1.12 var(--display); text-wrap: balance; max-width: 30ch; border-left: 4px solid var(--wood); padding-left: 1.2rem; }}
+.say {{ font: 600 clamp(1.8rem, 3.2vw, 3.6rem)/1.12 var(--display); text-wrap: balance; max-width: 36ch; border-left: 4px solid var(--wood); padding-left: 1.2rem; }}
 .say em {{ color: var(--wood); font-style: italic; }}
 h1 {{ margin: 0; font: 700 clamp(2.4rem, 5.4vw, 4.6rem)/0.95 var(--display); letter-spacing: -0.02em; }}
 h1 em {{ color: var(--teal); }}
@@ -250,7 +259,7 @@ h1 em {{ color: var(--teal); }}
 @media (max-width: 900px) {{ .s1grid {{ grid-template-columns: 1fr; }} }}
 .hero {{ width: 100%; max-width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: 50% 18%; border-radius: 14px; max-height: 44vh; }}
 /* slide 2 */
-.dots {{ display: grid; grid-template-columns: repeat(25, 1fr); gap: 6px; max-width: 760px; }}
+.dots {{ display: grid; grid-template-columns: repeat(25, 1fr); gap: 0.45rem; max-width: 64rem; }}
 .dots i {{ aspect-ratio: 1; border-radius: 50%; }}
 .dots i.g {{ background: var(--good); }} .dots i.r {{ background: var(--bad); }}
 .legend {{ display: flex; gap: 1.5rem; flex-wrap: wrap; color: var(--muted); font-size: 1rem; }}
@@ -259,7 +268,7 @@ h1 em {{ color: var(--teal); }}
 .question b {{ color: var(--ink); }}
 /* slide 3 */
 .flow {{ display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 1rem; }}
-.step {{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem; display: flex; flex-direction: column; gap: 0.6rem; }}
+.step {{ background: linear-gradient(160deg, #241c15, var(--panel) 60%); border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem; display: flex; flex-direction: column; gap: 0.6rem; }}
 .step .n {{ font: 700 2.4rem/1 var(--display); color: var(--wood); }}
 .step h3 {{ margin: 0; font: 600 1.35rem/1.2 var(--body); }}
 .step p {{ margin: 0; color: var(--muted); font-size: 1rem; }}
@@ -283,7 +292,7 @@ h1 em {{ color: var(--teal); }}
 .v small {{ color: var(--ink); opacity: 0.7; font-size: 0.9rem; }}
 /* slide 6 */
 .big {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }}
-.big > div {{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem 1.2rem; }}
+.big > div {{ background: linear-gradient(160deg, #241c15, var(--panel) 60%); border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem 1.2rem; }}
 .big .k {{ font: 500 0.75rem/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }}
 .big .x {{ font: 700 clamp(2.4rem, 5vw, 4rem)/1.05 var(--display); font-variant-numeric: tabular-nums; margin-top: 0.4rem; }}
 .big .x s {{ color: var(--muted); text-decoration: none; font-size: 0.6em; }}
@@ -291,19 +300,22 @@ h1 em {{ color: var(--teal); }}
 .pair figure {{ margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }}
 .pair figcaption {{ color: var(--muted); font-size: 1rem; }}
 .pair figcaption b {{ color: var(--ink); }}
-.waffle {{ width: 100%; max-width: 340px; height: auto; }}
+.waffle {{ width: 100%; max-width: 26rem; height: auto; }}
 .waffle .hit {{ fill: var(--wood); }} .waffle .miss {{ fill: none; stroke: var(--bad); stroke-width: 2.5; }}
-.bars {{ width: 100%; max-width: 820px; height: auto; display: block; }}
+.bars {{ width: 100%; max-width: 62rem; height: auto; display: block; }}
 .bars .grid {{ stroke: var(--line); }} .bars .tick {{ fill: var(--muted); font: 500 12px var(--mono); }}
 .bars .lab {{ fill: var(--ink); font: 500 16px var(--body); }}
 .bars .b0 {{ fill: #5a4d40; }} .bars .b1 {{ fill: var(--wood); }} .bars .jury {{ fill: var(--teal); opacity: 0.85; }}
 .bars .v0 {{ fill: var(--muted); font: 500 12px var(--mono); }} .bars .v1 {{ fill: var(--ink); font: 600 14px var(--mono); }}
 .bars .in {{ fill: #1b130b; font: 600 13px var(--mono); }}
+.s8grid {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 2.5rem; align-items: center; }}
+.s8left {{ display: flex; flex-direction: column; gap: 1.2rem; }}
+.closing {{ width: 100%; max-width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 14px; }}
 .two {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: center; }}
 pre {{ margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; font: 500 0.95rem/1.6 var(--mono); overflow-x: auto; }}
 .nav {{ position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); font: 500 0.8rem/1 var(--mono); color: var(--muted); }}
 @media (max-width: 800px) {{ .flow {{ grid-template-columns: 1fr; }} .arrow {{ transform: rotate(90deg); justify-self: center; }}
-  .rules, .case, .pair, .two, .big, .verdicts {{ grid-template-columns: 1fr; }} .dots {{ grid-template-columns: repeat(15, 1fr); }} }}
+  .rules, .case, .pair, .two, .big, .verdicts, .s8grid {{ grid-template-columns: 1fr; }} .dots {{ grid-template-columns: repeat(15, 1fr); }} }}
 </style>
 
 <section class="slide s1" id="s1">
@@ -390,14 +402,15 @@ pre {{ margin: 0; background: var(--panel); border: 1px solid var(--line); borde
 
 <section class="slide" id="s8">
   <div class="kicker"><span>Try it on your task</span><b>7 / 7</b></div>
-  <div class="visual two">
-    <pre>python pipeline.py adapt \\
+  <div class="visual s8grid">
+    <div class="s8left"><pre>python pipeline.py adapt \\
   --train labels.jsonl --artifacts out/
 
 python pipeline.py eval \\
   --test new.jsonl --artifacts out/ \\
   --out predictions.csv</pre>
-    <div class="step"><h3>Open source, MIT</h3><p>{repo}, folder judge/. Gemma 4. Works for support bots, moderation, any expert review. You get the rules as text, and every verdict names a rule.</p></div>
+    <div class="step"><h3>Open source, MIT</h3><p>{repo}, folder judge/. Gemma 4. Works for support bots, moderation, any expert review. You get the rules as text, and every verdict names a rule.</p></div></div>
+    {closing}
   </div>
   <p class="say">Pinoqio catches lies in people and <em>mistakes in bots.</em> Open source.</p>
 </section>
