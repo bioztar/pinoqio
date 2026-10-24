@@ -99,7 +99,11 @@ def main() -> None:
         logging.getLogger(noisy).setLevel(logging.WARNING)
     if args.demo_safe:
         from pinoqio import doctor
-        print(doctor.render(asyncio.run(doctor.prewarm())))
+        print(doctor.render(asyncio.run(doctor.prewarm())), flush=True)
+    if args.source == "live":
+        from pinoqio.audio import device_names
+        them, me = device_names()
+        log.info("live: listening to THEM on %r and ME on %r, voice=%s", them, me, os.environ.get("PINOQIO_VOICE_MODE", "whisper"))
     port = free_port()
     server = uvicorn.Server(uvicorn.Config(create_app(make_source(args)), host="127.0.0.1", port=port, log_level="warning"))
     url = f"http://127.0.0.1:{port}/?art={args.art}"

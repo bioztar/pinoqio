@@ -35,7 +35,7 @@
 <nav><a href="#setup">Setup</a><a href="#open">Open</a><a href="#call">Call</a><a href="#close">Close</a><a href="#slides">Slides</a><a href="#rescue">If it breaks</a></nav>
 
 <h2 id="setup">0 · Setup <span class="t">before going on stage</span></h2>
-<div class="line do"><b>Laptop</b>Teams: Speaker <b style="display:inline;color:var(--ink)">BlackHole 2ch</b>, Mic <b style="display:inline;color:var(--ink)">MacBook Air Microphone</b>. Volume up. Do Not Disturb on.</div>
+<div class="line do"><b>Laptop</b>Teams: Speaker <b style="display:inline;color:var(--ink)">Pinoqio Out</b> (laptop speakers + BlackHole, so the room hears Vitaly and Pinoqio hears him too), Mic <b style="display:inline;color:var(--ink)">MacBook Air Microphone</b>. Volume up. Do Not Disturb on.</div>
 <div class="line do"><b>Laptop</b><code>cd ~/DEV/pinoqio/copilot &amp;&amp; uv run python -m pinoqio.doctor</code></div>
 <div class="line do"><b>Phone</b>Vitaly joins the Teams call, stands a few metres from the laptop.</div>
 <div class="line do"><b>Laptop</b><code>uv run python -m pinoqio.app --source live --voice public --demo-safe</code><br><span class="cue">add --art scene for the rooftop Pinoqio</span></div>
@@ -92,7 +92,7 @@
 </ol>
 
 <h2 id="rescue">If it breaks</h2>
-<div class="line do"><b>No transcript of the seller</b>Teams speaker is not BlackHole 2ch. Fix it, the app keeps running.</div>
+<div class="line do"><b>No transcript of the seller</b>Teams speaker is not “Pinoqio Out”. Fix it, the app keeps running. Check the terminal for “heard them”.</div>
 <div class="line do"><b>Nose doesn't move</b>Models slow. Keep talking; DeepSeek takes over within ~8 s.</div>
 <div class="line do"><b>Nothing at all</b>Close the window, run the recording: <code>uv run python -m pinoqio.app --source replay --them-wav demo/replay/them.wav --me-wav demo/replay/me.wav --voice public</code> or open pinoqio.pro7ocol.com → Play demo.</div>
 </main>
