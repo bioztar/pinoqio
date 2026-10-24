@@ -1,0 +1,53 @@
+{
+  "_about": "Pinoqio's voice. 'stages' are indexed by the number of contradictions caught (0..8) and match the nose length in index.html. 'interjections' comment one specific contradiction: {then} and {now} are the two quotes.",
+  "stages": {
+    "ru": [
+      "Слушаю. Пока всё сходится. Даже подозрительно.",
+      "Минуту назад было иначе. Я не придираюсь, у меня просто деревянная память.",
+      "Две версии одной истории. Вы не врёте, вы выпускаете обновления. Без changelog.",
+      "Ваши показания расходятся быстрее, чем курс песо.",
+      "Депозит то возвращается, то нет. Это уже не договор, это сериал с открытым финалом.",
+      "Я бы сказал «верю», но мой нос подал апелляцию.",
+      "Мой нос уже видно с Монжуика. Гиды включили его в экскурсию.",
+      "На носу пророс росток. Даже природа решила, что вашей истории не хватает удобрений.",
+      "Воробей свил гнездо и оформил ипотеку. Говорит, правды тут не будет лет тридцать."
+    ],
+    "en": [
+      "I'm listening. So far it all adds up. Suspiciously so.",
+      "A minute ago it was different. I'm not nitpicking, I just have a wooden memory.",
+      "Two versions of one story. You're not lying, you're shipping updates. Without a changelog.",
+      "Your story moves faster than the peso.",
+      "The deposit is refundable, then it isn't. That's not a contract, that's a series with an open ending.",
+      "I'd say 'I believe you', but my nose filed an appeal.",
+      "You can see my nose from Montjuïc. The tour guides added it to the route.",
+      "A sprout grew on my nose. Even nature thinks your story needs fertilizer.",
+      "A sparrow built a nest and took out a mortgage. Says there'll be no truth here for thirty years."
+    ]
+  },
+  "interjections": {
+    "ru": [
+      "Две минуты назад было «{then}». Сейчас «{now}». Я не спорю, я просто веду протокол.",
+      "«{then}» и «{now}» — красивый дуэт. Жаль, поют разные песни.",
+      "Записал оба варианта: «{then}» и «{now}». Скажите, какой подписываем.",
+      "Сначала «{then}», потом «{now}». Это не переговоры, это A/B-тест.",
+      "В версии 1.0 было «{then}», в версии 2.0 — «{now}». Где патчноуты?",
+      "Можно я процитирую вас вам же? «{then}». Спасибо, это всё.",
+      "«{now}»? А недавно было «{then}». Время в Барселоне течёт быстро, но не настолько.",
+      "Я деревянный, но не дуб: «{then}» и «{now}» вместе не живут.",
+      "Предлагаю зафиксировать письменно, пока «{then}» не превратилось в «{now}» окончательно.",
+      "Мой нос растёт быстрее, чем ваши аргументы: «{then}» против «{now}»."
+    ],
+    "en": [
+      "Two minutes ago it was \"{then}\". Now it's \"{now}\". I'm not arguing, I'm just taking minutes.",
+      "\"{then}\" and \"{now}\": a lovely duet. Shame they're singing different songs.",
+      "I wrote down both: \"{then}\" and \"{now}\". Which one are we signing?",
+      "First \"{then}\", then \"{now}\". This isn't a negotiation, it's an A/B test.",
+      "Version 1.0 said \"{then}\". Version 2.0 says \"{now}\". Where are the release notes?",
+      "May I quote you to yourself? \"{then}\". Thank you, that's all.",
+      "\"{now}\"? A moment ago it was \"{then}\". Time flies in Barcelona, but not that fast.",
+      "I'm made of wood, not of oak-headed patience: \"{then}\" and \"{now}\" don't live together.",
+      "Let's put it in writing before \"{then}\" turns into \"{now}\" for good.",
+      "My nose grows faster than your arguments: \"{then}\" versus \"{now}\"."
+    ]
+  }
+}
