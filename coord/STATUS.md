@@ -14,5 +14,7 @@
 
 - 2026-10-24 summary: post-call summary on Nebius (Summary button, auto at call end, in recorded web demo) in PR #17.
 
+- 2026-10-24 doctor: `python -m pinoqio.doctor` stage preflight (10 s) + `app --demo-safe` pre-warm, PR open. Doctor shows Gemma 26B timing out at 10 s on this Mac right now.
+
 ## judge/ (Partner)
 - (fill in)
