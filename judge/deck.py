@@ -14,7 +14,8 @@ from report import TOPICS, in_numbers, read_preds, stats
 
 esc = html.escape
 REPO = "github.com/bioztar/pinoqio"
-CONV_SOURCE = "input_en"  # Plata ships an English translation of every conversation; None = original language
+CONV_SOURCE = "input_en"
+CASE_ID = None  # pin the stage case by item_id; default: first caught case in topic order  # Plata ships an English translation of every conversation; None = original language
 
 
 LINES = [
@@ -137,7 +138,7 @@ def main(run_dir, base_dir, test_csv, out_path, hero=None):
     order = list(TOPICS)
     caught = [i for i in gold if gold[i] == "bad" and base[i] == "good" and ours[i] == "bad" and reasons[i].get("violated")]
     caught.sort(key=lambda i: (order.index(topic_of[i]), len(test[i]["conversation"])))
-    case = caught[0]
+    case = next((i for i in caught if i.startswith(CASE_ID or "\0")), caught[0])
     # show Plata's English translation of the conversation on stage; fall back to the original
     try:
         conv = json.loads(test[case][CONV_SOURCE])["conversation"]
@@ -145,13 +146,18 @@ def main(run_dir, base_dir, test_csv, out_path, hero=None):
         conv = json.loads(test[case]["conversation"])
     bot = [m["content"] for m in conv if m["role"] == "assistant"][-1]
     numbers = in_numbers(test[case], "English")
-    violated = [v for v in reasons[case].get("violated", []) if v in rule_text]
 
+    violated = [v for v in reasons[case].get("violated", []) if v in rule_text]
     train_total = rulebook.get("train_total", 150)
     n_bad_train = sum(len(b["rules"]) for b in rulebook["topics"].values())
     showcase = []
     for t, b in rulebook["topics"].items():
-        for r in b["rules"][:2]:
+        picked = b["rules"][:2]
+        # the rule broken in the stage case belongs on the rules slide
+        hit = next((r for r in b["rules"] if r["id"] in violated and r not in picked), None)
+        if hit:
+            picked = [picked[0], hit]
+        for r in picked:
             showcase.append((TOPICS.get(t, t), r["id"], r["rule"]))
     rules_html = "".join(f'<li><span class="rid">{esc(rid)}</span><span class="rt">{esc(text)}</span><span class="tp">{esc(tp)}</span></li>'
                          for tp, rid, text in showcase)
@@ -200,7 +206,7 @@ TEMPLATE = """<meta charset="utf-8">
 html {{ scroll-snap-type: y mandatory; }}
 body {{ margin: 0; background: var(--bg); color: var(--ink); font: 400 18px/1.45 var(--body);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }}
-.slide {{ min-height: 100vh; scroll-snap-align: start; max-width: 1200px; margin: 0 auto; padding-block: 5vh 6vh;
+.slide {{ min-height: 100vh; scroll-snap-align: start; max-width: 1680px; margin: 0 auto; padding-block: 5vh 6vh;
   display: grid; grid-template-rows: auto 1fr auto; gap: 3vh; }}
 .kicker {{ font: 500 0.8rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }}
 .kicker b {{ color: var(--teal); font-weight: 500; }}
@@ -210,7 +216,7 @@ body {{ margin: 0; background: var(--bg); color: var(--ink); font: 400 18px/1.45
 h1 {{ margin: 0; font: 700 clamp(2.4rem, 5.4vw, 4.6rem)/0.95 var(--display); letter-spacing: -0.02em; }}
 h1 em {{ color: var(--teal); }}
 .sub {{ font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--muted); max-width: 40ch; }}
-.puppet {{ position: relative; aspect-ratio: 3 / 2; width: min(100%, 50vh * 1.5); border-radius: 14px; overflow: hidden; --nose-left: 29.4%; --reach: 29.4%; --tip-y: 20%;
+.puppet {{ position: relative; aspect-ratio: 3 / 2; width: min(100%, (100vh - 200px) * 1.5); border-radius: 14px; overflow: hidden; --nose-left: 29.4%; --reach: 29.4%; --tip-y: 20%;
   transition: --reach 0.75s cubic-bezier(.2, 1.35, .4, 1), --tip-y 0.75s cubic-bezier(.2, 1.35, .4, 1); }}
 @property --reach {{ syntax: "<percentage>"; inherits: true; initial-value: 29.4%; }}
 @property --tip-y {{ syntax: "<percentage>"; inherits: true; initial-value: 20%; }}
@@ -218,7 +224,7 @@ h1 em {{ color: var(--teal); }}
 .pf.face {{ opacity: 0; transition: opacity 0.6s;
   -webkit-mask-image: radial-gradient(ellipse 12% 19% at 25% 15%, #000 72%, transparent 100%); mask-image: radial-gradient(ellipse 12% 19% at 25% 15%, #000 72%, transparent 100%); }}
 .pf.face.on {{ opacity: 1; }}
-.pf.nose {{ -webkit-mask-image: linear-gradient(to bottom, transparent 6%, #000 10.5%, #000 25%, transparent 30%),
+.pf.nose {{ clip-path: polygon(31.5% 17.6%, 39% 17.6%, 39% 5%, 100% 5%, 100% 31%, 39% 31%, 39% 22.6%, 31.5% 22.6%); -webkit-mask-image: linear-gradient(to bottom, transparent 6%, #000 10.5%, #000 25%, transparent 30%),
     linear-gradient(to right, transparent var(--nose-left), #000 calc(var(--nose-left) + 0.5%), #000 calc(var(--reach) - 1.4%), transparent var(--reach));
   mask-image: linear-gradient(to bottom, transparent 6%, #000 10.5%, #000 25%, transparent 30%),
     linear-gradient(to right, transparent var(--nose-left), #000 calc(var(--nose-left) + 0.5%), #000 calc(var(--reach) - 1.4%), transparent var(--reach));
@@ -236,6 +242,12 @@ h1 em {{ color: var(--teal); }}
 .pbar #plie {{ background: var(--teal); border-color: var(--teal); color: #08201d; }}
 .pbar button:focus-visible {{ outline: 2px solid var(--teal); outline-offset: 3px; }}
 .pbar .hint {{ color: var(--muted); font-size: 0.95rem; }}
+.s1 {{ grid-template-rows: auto 1fr; }}
+.s1grid {{ display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 3rem; align-items: center; }}
+.s1art {{ display: flex; flex-direction: column; gap: 1rem; min-width: 0; }}
+.s1text {{ display: flex; flex-direction: column; gap: 2.5rem; }}
+.s1text h1 {{ font-size: clamp(2.4rem, 4.4vw, 5rem); }}
+@media (max-width: 900px) {{ .s1grid {{ grid-template-columns: 1fr; }} }}
 .hero {{ width: 100%; max-width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: 50% 18%; border-radius: 14px; max-height: 44vh; }}
 /* slide 2 */
 .dots {{ display: grid; grid-template-columns: repeat(25, 1fr); gap: 6px; max-width: 760px; }}
@@ -294,13 +306,15 @@ pre {{ margin: 0; background: var(--panel); border: 1px solid var(--line); borde
   .rules, .case, .pair, .two, .big, .verdicts {{ grid-template-columns: 1fr; }} .dots {{ grid-template-columns: repeat(15, 1fr); }} }}
 </style>
 
-<section class="slide" id="s1">
+<section class="slide s1" id="s1">
   <div class="kicker"><span>Pinoqio · judge mode</span><b>Plata track</b></div>
-  <div class="visual">
-    <h1>A judge that learns <em>from the expert</em></h1>
-    {hero}
+  <div class="s1grid">
+    <div class="s1art">{hero}</div>
+    <div class="s1text">
+      <h1>A judge that learns <em>from the expert</em></h1>
+      <p class="say">People contradict themselves. Bots do too. <em>With money, a mistake is expensive.</em></p>
+    </div>
   </div>
-  <p class="say">People lie. But <em>bots make mistakes</em> too.</p>
 </section>
 
 <section class="slide" id="s2">
@@ -346,7 +360,7 @@ pre {{ margin: 0; background: var(--panel); border: 1px solid var(--line); borde
       <div class="v bad"><span class="who">Pinoqio</span><b>Bad</b><small>caught it, named the rule</small></div>
     </div>
   </div>
-  <p class="say">The bot made a mistake with the money. <em>Gemma said good. Pinoqio said bad.</em></p>
+  <p class="say">The bot said 6,600. The truth is 5,100. <em>Gemma said good. Pinoqio said bad.</em></p>
 </section>
 
 <section class="slide" id="s6">
@@ -362,7 +376,7 @@ pre {{ margin: 0; background: var(--panel); border: 1px solid var(--line); borde
       <figure>{waffle1}<figcaption><b>Pinoqio, same model + learned rules.</b></figcaption></figure>
     </div>
   </div>
-  <p class="say">Same model. With the rules, Pinoqio misses <em>half as many</em> bad answers.</p>
+  <p class="say">Learned from {train_total} examples. Agreement with the expert: <em>{before} → {after}</em>.</p>
 </section>
 
 <section class="slide" id="s7">
@@ -385,7 +399,7 @@ python pipeline.py eval \\
   --out predictions.csv</pre>
     <div class="step"><h3>Open source, MIT</h3><p>{repo}, folder judge/. Gemma 4. Works for support bots, moderation, any expert review. You get the rules as text, and every verdict names a rule.</p></div>
   </div>
-  <p class="say">It is open source. <em>Plata can try it today</em>, on any task with an expert.</p>
+  <p class="say">Pinoqio catches lies in people and <em>mistakes in bots.</em> Open source.</p>
 </section>
 
 <div class="nav" aria-hidden="true">← → or scroll</div>
