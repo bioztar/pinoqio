@@ -83,27 +83,56 @@ async def verdicts(
     fallback: Ask = _nebius_analyst,
     verify_ask: Ask | None = None,
 ) -> AsyncIterator[Utterance | Verdict]:
-    history: tuple[Utterance, ...] = ()
-    ledger: tuple[LedgerItem, ...] = ()
-    seen: dict = {}  # quickcheck: topic -> (first value, time)
-    async for u in utterances:
-        history = history + (u,)
-        yield u
-        if u.speaker != "them":
-            continue
-        # Instant path: a changed price/date is flagged (and spoken) before any model call.
-        last_me = next((h.text for h in reversed(history) if h.speaker == "me"), "")
-        seen, drift = quickcheck.check(u.text, last_me, u.t_start, seen)
-        if drift:
-            label = f"{drift.topic.capitalize()}: {drift.then}{_clock(drift.then_t)}, now {drift.now}"
-            log.info("quickcheck utterance %s: %s", u.id, label)
-            yield Verdict(utterance_id=u.id, probability=0.9, verbal=0.9, vocal=0.12,
-                          chips=(Chip("number_drift", label, 0.9), _model_chip("instant check")), ledger=ledger)
-        t0 = time.monotonic()
-        analysis, answered = await _analyze(history, ledger, ask, fallback)
-        t1 = time.monotonic()
-        analysis, verification = await refine(analysis, history, ledger, verify_ask)
-        log.info("timing utterance %s: analyst %.1fs (%s), verifier %.1fs", u.id, t1 - t0, answered, time.monotonic() - t1)
-        ledger = merge_ledger(ledger, analysis.ledger_updates)
-        v = score(analysis, u.prosody)
-        yield replace(v, chips=v.chips + _badge(answered, verification), ledger=ledger)
+    """Every utterance passes straight through, the instant check fires the moment a line
+    arrives, and the slower model analysis runs in a background worker. Before this, line N+1's
+    instant check waited for line N's model analysis (up to ~11 s), so the second callout lagged."""
+    out: asyncio.Queue = asyncio.Queue()
+    work: asyncio.Queue = asyncio.Queue()
+    done = object()
+
+    async def reader() -> None:
+        history: tuple[Utterance, ...] = ()
+        seen: dict = {}  # quickcheck: topic -> (first value, time)
+        try:
+            async for u in utterances:
+                history = history + (u,)
+                await out.put(u)
+                if u.speaker != "them":
+                    continue
+                # Instant path: a changed price/date is flagged (and spoken) before any model call.
+                last_me = next((h.text for h in reversed(history) if h.speaker == "me"), "")
+                seen, drift = quickcheck.check(u.text, last_me, u.t_start, seen)
+                if drift:
+                    label = f"{drift.topic.capitalize()}: {drift.then}{_clock(drift.then_t)}, now {drift.now}"
+                    log.info("quickcheck utterance %s: %s", u.id, label)
+                    await out.put(Verdict(utterance_id=u.id, probability=0.9, verbal=0.9, vocal=0.12,
+                                          chips=(Chip("number_drift", label, 0.9), _model_chip("instant check"))))
+                await work.put((u, history))
+        finally:
+            await work.put(done)
+
+    async def worker() -> None:
+        ledger: tuple[LedgerItem, ...] = ()
+        try:
+            while (item := await work.get()) is not done:
+                u, history = item
+                t0 = time.monotonic()
+                analysis, answered = await _analyze(history, ledger, ask, fallback)
+                t1 = time.monotonic()
+                analysis, verification = await refine(analysis, history, ledger, verify_ask)
+                log.info("timing utterance %s: analyst %.1fs (%s), verifier %.1fs, queue %d",
+                         u.id, t1 - t0, answered, time.monotonic() - t1, work.qsize())
+                ledger = merge_ledger(ledger, analysis.ledger_updates)
+                v = score(analysis, u.prosody)
+                await out.put(replace(v, chips=v.chips + _badge(answered, verification), ledger=ledger))
+        finally:
+            await out.put(done)
+
+    tasks = (asyncio.create_task(reader()), asyncio.create_task(worker()))
+    try:
+        while (item := await out.get()) is not done:
+            yield item
+        await tasks[0]
+    finally:
+        for t in tasks:
+            t.cancel()
