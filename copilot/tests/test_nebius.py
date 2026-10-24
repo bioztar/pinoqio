@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -57,6 +59,59 @@ async def test_4xx_not_retried_and_bad_json_raises(monkeypatch):
     patch_client(monkeypatch, lambda req: ok("not json"))
     with pytest.raises(nebius.NebiusError):
         await nebius.ask_json("p")
+
+
+async def test_chain_moves_to_next_model_at_once_on_5xx(monkeypatch):
+    sleeps, models = [], []
+    monkeypatch.setattr(nebius.asyncio, "sleep", lambda s: sleeps.append(s))
+
+    def handler(req):
+        model = json.loads(req.read())["model"]
+        models.append(model)
+        return httpx.Response(503, text="overloaded") if len(models) == 1 else ok('{"a": 2}')
+
+    patch_client(monkeypatch, handler)
+    monkeypatch.setattr(nebius.config, "nebius_model", lambda: "deepseek-ai/DeepSeek-V4.1-Flash")
+    data, used = await nebius.ask_json_model("p")
+    assert data == {"a": 2} and used == nebius.FALLBACK_MODEL
+    assert models == ["deepseek-ai/DeepSeek-V4.1-Flash", nebius.FALLBACK_MODEL] and sleeps == []
+
+
+async def test_chain_second_pass_recovers_from_gateway_burst(monkeypatch):
+    calls = []
+
+    def handler(req):
+        calls.append(1)
+        return httpx.Response(503, text="<html>503") if len(calls) <= 2 else ok('{"a": 3}')
+
+    patch_client(monkeypatch, handler)
+    monkeypatch.setattr(nebius, "ROUND_PAUSE_S", 0)
+    assert await nebius.ask_json("p") == {"a": 3}
+    assert len(calls) == 3  # both models 503, then first model of the second pass answers
+
+
+async def test_chain_error_names_status_and_body_snippet_not_key(monkeypatch):
+    patch_client(monkeypatch, lambda req: httpx.Response(429, text="rate limited"))
+    with pytest.raises(nebius.NebiusError) as e:
+        await nebius.ask_json("p")
+    assert "http 429" in str(e.value) and "rate limited" in str(e.value) and "k" != str(e.value)
+
+
+async def test_explicit_model_has_no_chain(monkeypatch):
+    models = []
+
+    def handler(req):
+        models.append(json.loads(req.read())["model"])
+        return httpx.Response(503)
+
+    patch_client(monkeypatch, handler)
+    async def nosleep(s):
+        return None
+
+    monkeypatch.setattr(nebius.asyncio, "sleep", nosleep)
+    with pytest.raises(nebius.NebiusError):
+        await nebius.ask_json("p", model="only/this")
+    assert models == ["only/this", "only/this"]
 
 
 def test_short_name():

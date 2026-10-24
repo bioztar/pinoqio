@@ -74,6 +74,7 @@ async def test_gemma_error_propagates():
 def test_parse_json_variants():
     assert parse_json('```json\n{"a": 1}\n```') == {"a": 1}
     assert parse_json('Here: {"a": 1} done') == {"a": 1}
+    assert parse_json('[{"a": 1}]') == {"a": 1}  # one-item list is unwrapped
     for bad in ("not json", "[1]", "{broken"):
         with pytest.raises(GemmaError):
             parse_json(bad)

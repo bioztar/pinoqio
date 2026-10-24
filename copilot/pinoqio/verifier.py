@@ -3,6 +3,7 @@
 A confirmed drift is upgraded to a Contradiction; a rejected contradiction is dropped. If the
 verifier fails, Gemma's result is kept but confidence is capped below the public-interjection bar.
 """
+import asyncio
 import logging
 import re
 from dataclasses import dataclass, replace
@@ -16,7 +17,10 @@ from pinoqio.events import Contradiction, LedgerItem, Utterance
 log = logging.getLogger(__name__)
 
 SYSTEM = (Path(__file__).parent / "prompts" / "verifier.md").read_text()
-UNVERIFIED_CAP = 0.8  # below voice.INTERJECT_MIN_CONF (0.85)
+WINDOW = 16  # transcript lines sent to the verifier; the claim quotes are in the prompt anyway
+VERIFY_TIMEOUT_S = 5.0  # per model, so a two-model chain stays near the 8 s line budget
+VERIFY_BUDGET_S = 6.0  # whole verifier step, chain included; on timeout Gemma's result is kept, capped
+UNVERIFIED_CAP = 0.8# below voice.INTERJECT_MIN_CONF (0.85)
 
 
 @dataclass(frozen=True)
@@ -68,14 +72,17 @@ async def verify(
     claim: Claim, history: Sequence[Utterance], ledger: Sequence[LedgerItem], ask: Ask | None = None, model: str | None = None
 ) -> Verification:
     """Raises on call failure or malformed output."""
-    model = model or config.nebius_model()
+    window = history[-WINDOW:]
     prompt = (
         f"ITEM: {claim.item}\n"
         f'EARLIER (utterance {claim.then_id}, {_clock(claim.then_t)}): "{claim.then_quote}"\n'
         f'CURRENT (utterance {history[-1].id}, {_clock(claim.now_t)}): "{claim.now_quote}"\n\n'
-        f"LEDGER:\n{format_ledger(ledger)}\n\nTRANSCRIPT:\n{format_transcript(history)}\n\nReturn the JSON."
+        f"LEDGER:\n{format_ledger(ledger)}\n\nTRANSCRIPT:\n{format_transcript(window)}\n\nReturn the JSON."
     )
-    data = await (ask(prompt, SYSTEM) if ask else nebius.ask_json(prompt, SYSTEM, model))
+    if ask:
+        data, model = await ask(prompt, SYSTEM), model or config.nebius_model()
+    else:  # no explicit model: nebius model chain, label = whoever answered
+        data, model = await nebius.ask_json_model(prompt, SYSTEM, model, VERIFY_TIMEOUT_S)
     flag = data.get("is_contradiction")
     if not isinstance(flag, bool):
         raise ValueError("verifier: is_contradiction missing")
@@ -96,7 +103,7 @@ async def refine(
     if claim is None:
         return analysis, None
     try:
-        v = await verify(claim, history, ledger, ask)
+        v = await asyncio.wait_for(verify(claim, history, ledger, ask), VERIFY_BUDGET_S)
     except Exception as e:  # keep Gemma's result, but never let it fire a public interjection
         log.warning("verifier failed: %s: %s", type(e).__name__, e)
         c = analysis.contradiction
