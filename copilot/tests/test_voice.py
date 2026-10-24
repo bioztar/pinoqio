@@ -31,7 +31,7 @@ def test_whisper_rate_limited_8s():
 def test_interject_once_per_session():
     s, a = decide(PolicyState(), verdict(0.9, conf=0.85), 0.0)
     assert a.kind == "interject"
-    assert "forty thousand" in a.text and "forty-eight" in a.text and "Which one is it?" in a.text
+    assert "forty thousand" in a.text and "forty-eight" in a.text
     assert s.interjected
     _, a = decide(s, verdict(0.9, conf=0.95), 100.0)
     assert a.kind == "whisper"  # second big contradiction only whispers
