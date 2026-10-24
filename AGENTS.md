@@ -5,7 +5,7 @@ Two humans (Vitaly and his partner) each drive coding agents (Claude Code or any
 ## Lanes and ownership
 | Lane | Directory | Human owner | Branch prefix |
 |---|---|---|---|
-| Kevin, the call copilot | `copilot/` | Vitaly | `copilot/` |
+| Pinoqio, the call copilot | `copilot/` | Vitaly | `copilot/` |
 | Plata judge track | `judge/` | Partner (Vitaly reviews) | `judge/` |
 | Shared contracts and docs | `shared/`, `README.md`, this file | both, by agreement | `shared/` |
 
