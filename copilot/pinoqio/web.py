@@ -9,12 +9,14 @@ from pathlib import Path
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from pinoqio import live, record
 from pinoqio.server import UI_FILE
 
 log = logging.getLogger("pinoqio.web")
 BAR_FILE = UI_FILE.parent / "web_bar.html"
+STATIC_DIR = UI_FILE.parent / "static"
 REPLAY_DIR = Path(__file__).resolve().parents[1] / "demo" / "replay"
 
 
@@ -39,6 +41,8 @@ def create_web_app(replay_dir: Path = REPLAY_DIR, live_passcode: str | None = No
     @app.get("/demo/call.mp3")
     async def call_audio() -> FileResponse:
         return FileResponse(replay_dir / "call.mp3", media_type="audio/mpeg")
+
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
     @app.websocket("/demo")
     async def demo(sock: WebSocket) -> None:

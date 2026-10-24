@@ -21,6 +21,16 @@ def test_index_has_bar_and_hides_live_without_passcode(tmp_path):
     assert "window.PINOQIO_LIVE = true" in TestClient(web.create_web_app(_replay_dir(tmp_path), "pw")).get("/").text
 
 
+def test_brand_head_and_static_files_served(tmp_path):
+    client = TestClient(web.create_web_app(_replay_dir(tmp_path)))
+    html = client.get("/").text
+    for needle in ('rel="icon"', 'rel="apple-touch-icon"', 'property="og:image"', "twitter:card", "/static/logo-256.png"):
+        assert needle in html
+    for path, kind in (("logo-256.png", "image/png"), ("apple-touch-icon.png", "image/png"), ("cover.jpg", "image/jpeg")):
+        r = client.get(f"/static/{path}")
+        assert r.status_code == 200 and r.headers["content-type"] == kind and len(r.content) > 1000
+
+
 def test_each_connection_gets_its_own_full_replay(tmp_path):
     client = TestClient(web.create_web_app(_replay_dir(tmp_path)))
     assert client.get("/demo/call.mp3").content == b"ID3fake"
