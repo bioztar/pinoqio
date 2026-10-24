@@ -45,6 +45,15 @@
   #say:disabled { background:#33363f; color:var(--mute); cursor:default; }
   #status { flex:none; font-size:11px; color:var(--mute); text-align:center; }
   .hidden { display:none; }
+  #foot { flex:none; display:flex; justify-content:center; gap:12px; align-items:center; }
+  .link { background:none; border:0; color:var(--accent); font-size:11px; cursor:pointer; padding:0; }
+  #summary { max-height:46vh; font-size:13px; }
+  #summary h3 small { text-transform:none; letter-spacing:0; }
+  #sum-body h4 { margin:8px 0 2px; font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
+  #sum-body div { padding:1px 0; }
+  #sum-body .changed { color:#ffb4a8; }
+  #sum-body .q { font-style:italic; color:var(--mute); }
+  #sum-body .email { color:var(--accent); font-weight:600; }
 </style>
 </head>
 <body>
@@ -84,9 +93,13 @@
 <div class="panel"><h3>Promise ledger</h3>
   <table><thead><tr><th>Who</th><th>Item</th><th>Value</th></tr></thead><tbody id="ledger"></tbody></table>
 </div>
+<div class="panel scroll hidden" id="summary">
+  <h3>Call summary <small id="sum-model"></small> <button id="sum-close" class="link">close</button></h3>
+  <div id="sum-body"></div>
+</div>
 <div class="panel scroll" id="transcript"></div>
 <button id="say" disabled>Say it</button>
-<div id="status">connecting…</div>
+<div id="foot"><div id="status">connecting…</div><button id="sum-btn" class="link">Summary</button></div>
 
 <script>
 (() => {
@@ -174,6 +187,41 @@
     setTimeout(() => { $('say').disabled = false; }, 3000);
   });
 
+  let haveSummary = false;
+  function onSummary(s) {
+    haveSummary = true;
+    $('sum-model').textContent = s.model ? `· ${s.model}` : '';
+    const body = $('sum-body'); clear(body);
+    const section = (title, rows) => {
+      if (!rows.length) return;
+      add(body, 'h4', title);
+      rows.forEach(([text, cls, quote]) => {
+        const row = add(body, 'div', text, cls);
+        if (quote) add(row, 'span', ` “${quote}”`, 'q');
+      });
+    };
+    section('Commitments', s.commitments.map(c => [
+      `${c.who === 'me' ? 'You' : 'They'}: ${c.item} = ${c.value}${c.changed ? ` (was ${c.was || '?'})` : ''}`,
+      c.changed ? 'changed' : '']));
+    section('Open questions', s.open_questions.map(q => [q]));
+    section('Red flags', s.red_flags.map(f => [f.text, '', f.quote]));
+    if (s.next_email) section('Next email', [[s.next_email, 'email']]);
+    $('summary').classList.remove('hidden');
+  }
+
+  $('sum-close').addEventListener('click', () => $('summary').classList.add('hidden'));
+  $('sum-btn').addEventListener('click', async () => {
+    if (haveSummary) { $('summary').classList.toggle('hidden'); return; }
+    $('status').textContent = 'summarising…';
+    try {
+      const r = await fetch('/summary', { method: 'POST' });
+      if (!r.ok) throw new Error(r.status);
+      if (!(await r.json()).ok) $('status').textContent = 'nothing to summarise yet';
+    } catch (e) {
+      $('status').textContent = 'summary appears when the call ends';
+    }
+  });
+
   function connect() {
     const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
     ws.onopen = () => { $('status').textContent = 'connected'; };
@@ -183,12 +231,14 @@
 
   function handle(m) {
     if (m.type === 'utterance') onUtterance(m); else if (m.type === 'verdict') onVerdict(m);
+    else if (m.type === 'summary') onSummary(m);
   }
 
   function reset() {
     times.clear(); sentAt.clear(); contradiction = null;
     ['chips', 'ledger', 'transcript'].forEach(id => clear($(id)));
     $('contra').classList.add('hidden');
+    $('summary').classList.add('hidden'); haveSummary = false;
     $('ask').textContent = '…';
     $('say').disabled = true;
     setProb(0);

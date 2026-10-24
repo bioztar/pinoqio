@@ -12,13 +12,14 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from pinoqio.events import Utterance, Verdict
+from pinoqio.summary import Summary, summarize
 
 log = logging.getLogger("pinoqio.server")
 UI_FILE = Path(__file__).parent / "ui" / "index.html"
 
 
-def to_json(event: Utterance | Verdict) -> dict:
-    kind = "utterance" if isinstance(event, Utterance) else "verdict"
+def to_json(event: Utterance | Verdict | Summary) -> dict:
+    kind = {Utterance: "utterance", Summary: "summary"}.get(type(event), "verdict")
     return {"type": kind, **dataclasses.asdict(event)}
 
 
@@ -29,7 +30,11 @@ class Hub:
         self._history: tuple[dict, ...] = ()
         self._subs: set[asyncio.Queue] = set()
 
-    def publish(self, event: Utterance | Verdict) -> None:
+    @property
+    def history(self) -> tuple[dict, ...]:
+        return self._history
+
+    def publish(self, event: Utterance | Verdict | Summary) -> None:
         msg = to_json(event)
         self._history = (*self._history, msg)
         for q in self._subs:
@@ -100,6 +105,15 @@ def create_app(
         except Exception:
             log.exception("interject failed")
             return {"ok": False}
+        return {"ok": True}
+
+    @app.post("/summary")
+    async def post_summary() -> dict:
+        """The Summary button: summarise the call so far and push it to every client."""
+        s = await summarize(hub.history)
+        if s is None:
+            return {"ok": False}
+        hub.publish(s)
         return {"ok": True}
 
     @app.websocket("/ws")

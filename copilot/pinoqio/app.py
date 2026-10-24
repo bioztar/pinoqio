@@ -14,6 +14,7 @@ from pinoqio import fake
 from pinoqio.events import Utterance, Verdict
 from pinoqio.record import recording
 from pinoqio.server import Hub, create_app
+from pinoqio.summary import Summary, summarize
 
 log = logging.getLogger("pinoqio.app")
 
@@ -41,6 +42,17 @@ async def with_voice_hook(stream: AsyncIterator[Utterance | Verdict]) -> AsyncIt
         yield event
 
 
+async def with_summary(stream: AsyncIterator[Utterance | Verdict]) -> AsyncIterator[Utterance | Verdict | Summary]:
+    """Pass events through; when the call ends, append the post-call summary."""
+    seen: tuple[Utterance | Verdict, ...] = ()
+    async for event in stream:
+        seen = (*seen, event)
+        yield event
+    summary = await summarize(seen)
+    if summary:
+        yield summary
+
+
 def make_source(args: argparse.Namespace):
     async def fake_source(_: Hub):
         async for e in with_voice_hook(fake.events(args.speed)):
@@ -53,7 +65,8 @@ def make_source(args: argparse.Namespace):
         async for e in with_voice_hook(brain.verdicts(ears.utterances(args.source, **wavs))):
             yield e
 
-    source = fake_source if args.source == "fake" else pipeline_source
+    raw = fake_source if args.source == "fake" else pipeline_source
+    source = lambda hub: with_summary(raw(hub))  # noqa: E731
     if not args.record:
         return source
     return lambda hub: recording(source(hub), args.record)
