@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from pinoqio import fake
 from pinoqio.events import Chip, Contradiction, LedgerItem, Utterance, Verdict
 from pinoqio.server import create_app, to_json
+from pinoqio.summary import Summary
 
 
 def test_utterance_json():
@@ -26,7 +27,9 @@ def test_verdict_json_nested():
 
 async def test_fake_emits_both_types_with_contradictions():
     out = [e async for e in fake.events(speed=10_000)]
-    assert {type(e) for e in out} == {Utterance, Verdict}
+    assert {type(e) for e in out} == {Utterance, Verdict, Summary}
+    assert isinstance(out[-1], Summary)
+    assert all(any(c.kind == "model" for c in e.chips) for e in out if isinstance(e, Verdict))
     assert sum(1 for e in out if isinstance(e, Verdict) and e.contradiction) == 2
 
 

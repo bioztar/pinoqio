@@ -3,6 +3,7 @@ import asyncio
 from collections.abc import AsyncIterator
 
 from pinoqio.events import Chip, Contradiction, LedgerItem, Utterance, Verdict
+from pinoqio.summary import Commitment, RedFlag, Summary
 
 PRICE_40 = LedgerItem("them", "unit price", "40k EUR", 2)
 DATE_MARCH = LedgerItem("them", "delivery date", "15 March", 4)
@@ -45,8 +46,34 @@ _SCRIPT: tuple[tuple, ...] = (
 )
 
 
-async def events(speed: float = 1.0) -> AsyncIterator[Utterance | Verdict]:
-    """Yield the script with call-like timing; speed>1 plays faster."""
+SUMMARY = Summary(
+    commitments=(
+        Commitment("them", "quantity", "5,000 units"),
+        Commitment("them", "total price", "48k EUR", True, "40k EUR"),
+        Commitment("them", "delivery date", "end of April", True, "15 March"),
+    ),
+    open_questions=("What is the actual defect rate percentage?",),
+    red_flags=(
+        RedFlag("Price rose from 40k to 48k after the initial quote.", "it will be forty-eight thousand"),
+        RedFlag("Delivery slipped from 15 March to end of April.", "I think maybe end of April"),
+        RedFlag("Defect rate question was dodged with vague quality claims.", "we are very proud of our process"),
+    ),
+    next_email=(
+        "Please confirm in writing the final price of 48k EUR (up from 40k), the delivery date of end of April "
+        "(up from 15 March), and the actual defect rate on the last batch, which you did not give on the call."
+    ),
+    model="DeepSeek",
+)
+
+
+def _with_model(verdict: dict, i: int) -> dict:
+    """Gemma answers every verdict; contradictions are also verified by the second model."""
+    labels = ["Gemma 4"] + (["verified by DeepSeek"] if verdict.get("contradiction") else [])
+    return {**verdict, "chips": (*verdict.get("chips", ()), *(Chip("model", lb, 0.0) for lb in labels))}
+
+
+async def events(speed: float = 1.0) -> AsyncIterator[Utterance | Verdict | Summary]:
+    """Yield the script with call-like timing, then the post-call summary; speed>1 plays faster."""
     clock = 0.0
     for i, (speaker, text, t_start, t_end, verdict) in enumerate(_SCRIPT, start=1):
         await asyncio.sleep(max(0.0, t_end - clock) / speed)
@@ -54,4 +81,6 @@ async def events(speed: float = 1.0) -> AsyncIterator[Utterance | Verdict]:
         yield Utterance(i, speaker, text, t_start, t_end)
         if verdict:
             await asyncio.sleep(1.2 / speed)  # model latency
-            yield Verdict(utterance_id=i, **verdict)
+            yield Verdict(utterance_id=i, **_with_model(verdict, i))
+    await asyncio.sleep(2.0 / speed)
+    yield SUMMARY

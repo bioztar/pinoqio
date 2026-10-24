@@ -47,7 +47,9 @@
   .hidden { display:none; }
   #foot { flex:none; display:flex; justify-content:center; gap:12px; align-items:center; }
   .link { background:none; border:0; color:var(--accent); font-size:11px; cursor:pointer; padding:0; }
-  #summary { max-height:46vh; font-size:13px; }
+  /* sheet over the lower panels: the puppet and badge stay visible, the summary gets the full height */
+  #summary { position:fixed; left:10px; right:10px; top:252px; bottom:10px; z-index:5; font-size:13px; box-shadow:0 -6px 18px #000a; }
+  #summary h3 { position:sticky; top:-8px; background:var(--card); padding:2px 0; margin-top:-2px; }
   #summary h3 small { text-transform:none; letter-spacing:0; }
   #sum-body h4 { margin:8px 0 2px; font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
   #sum-body div { padding:1px 0; }
