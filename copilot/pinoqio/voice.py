@@ -217,7 +217,13 @@ class Voice:
                 pcm = await loop.run_in_executor(None, synth_pcm, text, self._voice_id)
                 device = resolve_device(device_name)
                 log.info("voice: playing %r on %r (device %s)", text, device_name, device)
-                await loop.run_in_executor(None, play_pcm, pcm, device)
+                from pinoqio.audio import SPEAKING
+                SPEAKING.set()
+                try:
+                    await loop.run_in_executor(None, play_pcm, pcm, device)
+                    await asyncio.sleep(0.4)  # room echo tail
+                finally:
+                    SPEAKING.clear()
             except Exception:  # never crash the live pipeline
                 log.exception("voice: speak failed, skipping %r", text)
 
