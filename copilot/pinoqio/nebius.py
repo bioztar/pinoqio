@@ -15,7 +15,8 @@ log = logging.getLogger(__name__)
 
 TIMEOUT_S = 8.0
 RETRY_CODES = frozenset({403, 429})
-FALLBACK_MODEL = "Qwen/Qwen3-30B-A3B-Instruct-2507"
+ROUND_PAUSE_S = 0.6
+FALLBACK_MODEL ="Qwen/Qwen3-30B-A3B-Instruct-2507"
 
 
 class NebiusError(RuntimeError):
@@ -87,12 +88,17 @@ async def ask_json_model(
                     continue
                 raise NebiusError(f"nebius failed twice ({e})") from e
     failures = []
-    for m in chain():
-        try:
-            return await _once(prompt, system, m, timeout), m
-        except _Retryable as e:
-            log.warning("nebius %s", e)
-            failures.append(str(e))
+    # The gateway returns bursts of HTML 503s for every model at once (seen live, gone seconds
+    # later), so after a full pass fails, pause briefly and walk the chain once more.
+    for round_ in (0, 1):
+        if round_:
+            await asyncio.sleep(ROUND_PAUSE_S)
+        for m in chain():
+            try:
+                return await _once(prompt, system, m, timeout), m
+            except _Retryable as e:
+                log.warning("nebius %s", e)
+                failures.append(str(e))
     raise NebiusError("nebius chain failed: " + "; ".join(failures))
 
 

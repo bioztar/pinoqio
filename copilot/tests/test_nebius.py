@@ -77,6 +77,19 @@ async def test_chain_moves_to_next_model_at_once_on_5xx(monkeypatch):
     assert models == ["deepseek-ai/DeepSeek-V4.1-Flash", nebius.FALLBACK_MODEL] and sleeps == []
 
 
+async def test_chain_second_pass_recovers_from_gateway_burst(monkeypatch):
+    calls = []
+
+    def handler(req):
+        calls.append(1)
+        return httpx.Response(503, text="<html>503") if len(calls) <= 2 else ok('{"a": 3}')
+
+    patch_client(monkeypatch, handler)
+    monkeypatch.setattr(nebius, "ROUND_PAUSE_S", 0)
+    assert await nebius.ask_json("p") == {"a": 3}
+    assert len(calls) == 3  # both models 503, then first model of the second pass answers
+
+
 async def test_chain_error_names_status_and_body_snippet_not_key(monkeypatch):
     patch_client(monkeypatch, lambda req: httpx.Response(429, text="rate limited"))
     with pytest.raises(nebius.NebiusError) as e:
