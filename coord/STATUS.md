@@ -7,6 +7,7 @@
 - 2026-10-24 13:45 face: server, UI (Pinocchio nose hero), window, fake source, app entry done, PR open. Next: wire live/replay once ears+brain merge. Blockers: none.
 - Blockers: none.
 - 2026-10-24 13:45 voice+demo: voice.py (TTS + policy), demo/script.md, replay wavs (114 s), smoke_voice OK; PR open. Next: none, awaiting review.
+- 2026-10-24 brain: config (PR #4) + Gemma analyst/scorer/brain.py done, smoke run OK (~5 s/call with thinking_level MINIMAL). Next: review/merge brain PR.
 
 ## judge/ (Partner)
 - (fill in)
