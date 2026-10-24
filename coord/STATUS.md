@@ -1,25 +1,9 @@
 # STATUS: live board (each lane edits only its own block)
 
 ## copilot/ (Vitaly)
-- 2026-10-24 13:40: keys validated (Gemini both keys: gemma-4-26b-a4b-it OK ~2.5s, gemma-4-31b-it timed out at 40s, so 26B is the default; ElevenLabs creator tier active). Scaffold + lane contract `copilot/pinoqio/events.py` merged.
-- Next: 4 crewmates in parallel: ears (audio + Scribe + prosody + replay), brain (Gemma analyst + scorer), face (floating window UI + server + app wiring), voice+demo (ElevenLabs TTS, demo script, replay recordings).
-- 2026-10-24 13:45 ears: audio/stt/prosody/replay/ears + tests (19 green) in PR; replay smoke OK with real Scribe. Live smoke needs BlackHole call. Next: review.
-- 2026-10-24 13:45 face: server, UI (Pinocchio nose hero), window, fake source, app entry done, PR open. Next: wire live/replay once ears+brain merge. Blockers: none.
-- Blockers: none.
-- 2026-10-24 14:50 brand: logo favicon/apple-touch/og+twitter cover, web bar logo, macOS Dock icon, /static route in PR. Next: review.
-- 2026-10-24 eval: 8 scripted negotiations + `copilot/scripts/run_eval.py` + `copilot/eval/report.md` (real run: 80% exact label, 25% false alarm on honest lines, Gemma 19/56 calls over 8 s budget or errored). PR open.
-- 2026-10-24 web: demo LIVE at https://pinoqio.pro7ocol.com. Try live (passcode-gated /live ws, mic + tab audio) in PR; needs .env on VPS with keys + PINOQIO_LIVE_PASSCODE.
-- 2026-10-24 13:45 voice+demo: voice.py (TTS + policy), demo/script.md, replay wavs (114 s), smoke_voice OK; PR open. Next: none, awaiting review.
-- 2026-10-24 brain: config (PR #4) + Gemma analyst/scorer/brain.py done, smoke run OK (~5 s/call with thinking_level MINIMAL). Next: review/merge brain PR.
-
-- 2026-10-24 nebius: fallback + verifier (DeepSeek-V4.1-Flash) + UI badge in PR #15, replay re-recorded, both planted contradictions verified 0.95. Stretch summary skipped.
-
-- 2026-10-24 summary: post-call summary on Nebius (Summary button, auto at call end, in recorded web demo) in PR #17.
-
-- 2026-10-24 doctor: `python -m pinoqio.doctor` stage preflight (10 s) + `app --demo-safe` pre-warm, PR open. Doctor shows Gemma 26B timing out at 10 s on this Mac right now.
-- 2026-10-24 docs: root README (hero, mermaid, honest limits), DEVPOST.md, architecture.md in PR. Found: app.py voice hook imports a missing module-level `voice.on_verdict`, so the desktop app does not speak yet (documented as a known gap). README links `judge/README.md`, which the judge lane must add.
-- 2026-10-24 video: `/demo/backup.mp4` route + web-bar link in PR; the mp4 is not recorded yet (Mac locked). Run `copilot/scripts/record_backup.sh` on an unlocked Mac to produce `copilot/demo/backup-demo.mp4`.
-- 2026-10-24 15:15 qa: desktop replay, doctor, local /live all pass; fixed Say-it button (was silent on repeat), voice playback logging, quote punctuation in interjection, error messages in brain warnings. PR open. Note: run one replay at a time on stage, shared keys 429 under parallel load.
+- 2026-10-24 16:30 FINAL: all copilot work merged on main (PRs #3-#47). Live window (`pinoqio.app --source live --voice public --art cartoon|scene`), Gemma 4 analyst + Nebius DeepSeek verifier/fallback/summary, claim check, image nose with BOING animation, voice modes, doctor preflight, eval report, pitch + architecture build slide. Web demo + Try live at https://pinoqio.pro7ocol.com.
+- Known limits: Gemma free tier and the Nebius gateway were flaky 15:00-15:45 (timeouts, 503 bursts); hedged race + model chain keep lines flowing, run `pinoqio.doctor` before going live. Backup video not recorded (`copilot/scripts/record_backup.sh`).
+- MLH submission done (manually, by Vitaly).
 
 ## judge/ (Partner)
 - 2026-10-24 13:25: Plata task read (github.com/platacard/metalearning-llmaaj). Score = 10 × macro_topic_accuracy + 0.4 × I (jury, 5 binary points for the auto-generated explanation). Cost does not count. Submission: fork + Docker with `adapt`/`eval`. Private set has new hidden rules, so rules must be learned in `adapt`.

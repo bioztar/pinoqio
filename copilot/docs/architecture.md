@@ -43,9 +43,9 @@ flowchart LR
 
 A failed model call must never kill the live pipeline. Gemma error or timeout → Nebius analyses. Both fail → neutral analysis, vocal-only verdict. Verifier fails → keep Gemma's finding, cap confidence. Voice playback errors are logged and skipped. Summary failure → offline summary.
 
-## Known gap
+## Voice
 
-`app.py` expects a module-level `pinoqio.voice.on_verdict`. `voice.py` currently exposes `Voice.on_verdict` instead, so the desktop app does not speak automatically yet. `scripts/smoke_voice.py` exercises the voice path directly.
+`pinoqio.voice` exposes module-level `on_verdict` / `interject` hooks used by `app.py` and the "Say it" button. Modes: public (every contradiction spoken, once per topic), whisper (earpiece + one interjection), private (silent).
 
 ## Deployment
 
