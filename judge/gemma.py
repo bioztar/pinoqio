@@ -30,6 +30,9 @@ def ask(prompt: str, model: str = FAST, system: str | None = None, retries: int 
             transient = getattr(e, "code", None) in (403, 429)
             if attempt == retries - 1 or (isinstance(e, errors.ClientError) and not transient):
                 raise
+            if isinstance(e, errors.ServerError) and model == STRONG:
+                model = FAST  # 31B returns 500 for long stretches on the free tier; 26B keeps the run alive
+                continue
             time.sleep(min(60, 4 * 2**attempt))
             continue
         usage = resp.usage_metadata
