@@ -22,9 +22,9 @@ def short_name(model: str) -> str:
     return model.split("/")[-1].split("-")[0]
 
 
-async def _post(prompt: str, system: str | None, model: str) -> str:
+async def _post(prompt: str, system: str | None, model: str, timeout: float = TIMEOUT_S) -> str:
     messages = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": prompt}]
-    async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
+    async with httpx.AsyncClient(timeout=timeout) as client:
         r = await client.post(
             config.nebius_base_url().rstrip("/") + "/chat/completions",
             headers={"Authorization": f"Bearer {config.nebius_key()}"},
@@ -49,12 +49,14 @@ class _Retryable(Exception):
     pass
 
 
-async def ask_json(prompt: str, system: str | None = None, model: str | None = None) -> dict:
+async def ask_json(
+    prompt: str, system: str | None = None, model: str | None = None, timeout: float = TIMEOUT_S
+) -> dict:
     """One deterministic call returning a JSON object. Retries once. Raises NebiusError."""
     model = model or config.nebius_model()
     for attempt in (0, 1):
         try:
-            return parse_json(await _post(prompt, system, model))
+            return parse_json(await _post(prompt, system, model, timeout))
         except (_Retryable, httpx.TransportError) as e:  # TimeoutException is a TransportError
             if attempt == 0:
                 await asyncio.sleep(0.5)
