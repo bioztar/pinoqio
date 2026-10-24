@@ -53,6 +53,7 @@ class Action:
 class PolicyState:
     last_whisper_t: float | None = None
     interjected: bool = False
+    said: frozenset[str] = frozenset()  # public mode: inconsistencies already called out
 
 
 def _words(text: str, n: int) -> str:
@@ -88,6 +89,45 @@ def decide(state: PolicyState, v: Verdict, now: float) -> tuple[PolicyState, Act
     ):
         return replace(state, last_whisper_t=now), Action("whisper", cue_for(v))
     return state, None
+
+
+# Voice modes (PINOQIO_VOICE_MODE, or `pinoqio.app --voice`):
+#   public  = every inconsistency is said out loud into the call (demo)
+#   whisper = earpiece cues + one public interjection per call (default, the original policy)
+#   private = silent; the window shows the lie % and evidence only
+VOICE_MODES = ("public", "whisper", "private")
+PUBLIC_MIN_CONF = 0.6
+INCONSISTENCY_KINDS = ("contradiction", "number_drift")
+
+
+def voice_mode() -> str:
+    mode = os.environ.get("PINOQIO_VOICE_MODE", "whisper")
+    return mode if mode in VOICE_MODES else "whisper"
+
+
+def callout_for(v: Verdict) -> tuple[str, str] | None:
+    """(dedupe key, line to say) for an inconsistency in this verdict, else None.
+
+    Keyed by topic (the drift chip's "Delivery date: ..." prefix) so a contradiction and
+    the matching number drift on a later line are called out once, not twice.
+    """
+    drift = [ch for ch in v.chips if ch.kind == "number_drift"]
+    topic = max(drift, key=lambda ch: ch.weight).label.split(":")[0].strip().lower() if drift else None
+    c = v.contradiction
+    if c is not None and c.confidence >= PUBLIC_MIN_CONF:
+        return f"t:{topic}" if topic else f"c:{c.then_utterance_id}", interjection_for(v)
+    if drift:
+        label = _words(max(drift, key=lambda ch: ch.weight).label, 16)
+        return f"t:{topic}", f"Sorry to jump in. {label}. Which one is it?"
+    return None
+
+
+def decide_public(state: PolicyState, v: Verdict) -> tuple[PolicyState, Action | None]:
+    """Public mode: say each distinct inconsistency out loud once."""
+    hit = callout_for(v)
+    if hit is None or hit[0] in state.said:
+        return state, None
+    return replace(state, said=state.said | {hit[0]}), Action("interject", hit[1])
 
 
 # ---------- TTS ----------
@@ -170,6 +210,15 @@ class Voice:
 
     def on_verdict(self, v: Verdict, now: float | None = None) -> Action | None:
         """Apply the policy to a verdict and speak the result. Returns the action taken."""
+        mode = voice_mode()
+        if mode == "private":
+            return None
+        if mode == "public":
+            self._state, action = decide_public(self._state, v)
+            if action is not None:
+                dev = os.environ.get("PINOQIO_PUBLIC_DEVICE", DEFAULT_PUBLIC_DEVICE)
+                asyncio.create_task(self._speak(action.text, dev))  # the lock queues clips in order
+            return action
         t = asyncio.get_running_loop().time() if now is None else now
         new_state, action = decide(self._state, v, t)
         if action is None:

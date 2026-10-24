@@ -70,3 +70,28 @@ def test_say_it_button_speaks_every_press(monkeypatch):
 
     asyncio.run(press_twice())
     assert spoken == ["one", "two"]
+
+
+def _verdict_with(chips=(), contradiction=None):
+    from pinoqio.events import Verdict
+    return Verdict(utterance_id=9, probability=0.9, verbal=0.9, vocal=0.1, chips=tuple(chips), contradiction=contradiction)
+
+
+def test_public_mode_calls_out_each_inconsistency_once():
+    from pinoqio.events import Chip, Contradiction
+    from pinoqio.voice import PolicyState, decide_public
+    price = _verdict_with(contradiction=Contradiction("it is 48,000", "the price is 40,000", 3, 0.7))
+    delivery = _verdict_with(chips=[Chip("number_drift", "Delivery date: March at 0:25, now end of April", 0.5)])
+    s, a1 = decide_public(PolicyState(), price)
+    s, again = decide_public(s, price)
+    s, a2 = decide_public(s, delivery)
+    assert a1 and a1.kind == "interject" and "40,000" in a1.text
+    assert again is None
+    assert a2 and "end of April" in a2.text
+
+
+def test_public_mode_ignores_plain_hedging():
+    from pinoqio.events import Chip
+    from pinoqio.voice import PolicyState, decide_public
+    _, a = decide_public(PolicyState(), _verdict_with(chips=[Chip("hedging", "Hedging: maybe", 0.3)]))
+    assert a is None
