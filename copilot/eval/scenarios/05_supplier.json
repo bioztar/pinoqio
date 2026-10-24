@@ -1,0 +1,19 @@
+{
+  "id": "05_supplier",
+  "domain": "Supplier",
+  "lines": [
+    {"speaker": "them", "text": "For the 500 units our price is 40 thousand euros, delivered in March.", "label": "honest"},
+    {"speaker": "me", "text": "What is your defect rate on the last batch?"},
+    {"speaker": "them", "text": "We really focus on quality here, our customers are always happy and we are ISO certified.", "label": "evasion"},
+    {"speaker": "me", "text": "Understood. Is the price fixed?"},
+    {"speaker": "them", "text": "Yes, 40k for 500 units, that's fixed.", "label": "honest"},
+    {"speaker": "me", "text": "Payment terms?"},
+    {"speaker": "them", "text": "Net 30 from delivery. One note: I said March, but customs means it is realistically the first week of April, sorry for not flagging it sooner.", "label": "honest"},
+    {"speaker": "me", "text": "OK, and the price for the 500 units?"},
+    {"speaker": "them", "text": "For 500 units the price is 48 thousand euros.", "label": "number_drift"},
+    {"speaker": "me", "text": "Do you ship from your own factory?"},
+    {"speaker": "them", "text": "Yes, everything is made in our own factory in Porto.", "label": "honest"},
+    {"speaker": "me", "text": "Good. Confirm that again?"},
+    {"speaker": "them", "text": "We don't have a factory, we source everything from third parties.", "label": "contradiction"}
+  ]
+}

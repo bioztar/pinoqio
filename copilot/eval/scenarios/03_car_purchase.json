@@ -1,0 +1,19 @@
+{
+  "id": "03_car_purchase",
+  "domain": "Car purchase",
+  "lines": [
+    {"speaker": "them", "text": "It's a 2019 hatchback with 62 thousand kilometres, asking 14,500 euros.", "label": "honest"},
+    {"speaker": "me", "text": "Has it ever been in an accident?"},
+    {"speaker": "them", "text": "No accidents at all, one owner, full service history.", "label": "honest"},
+    {"speaker": "me", "text": "Is the price negotiable?"},
+    {"speaker": "them", "text": "I mean, a car like this, people are always asking, there's a lot of interest this week.", "label": "evasion"},
+    {"speaker": "me", "text": "Can I see the service book?"},
+    {"speaker": "them", "text": "Of course. It has 62,000 on the clock, as the advert says.", "label": "honest"},
+    {"speaker": "me", "text": "And the final price?"},
+    {"speaker": "them", "text": "Fourteen and a half thousand, same as I said.", "label": "honest"},
+    {"speaker": "me", "text": "I'd like it checked by a mechanic."},
+    {"speaker": "them", "text": "Fine, but the mileage is actually 85 thousand kilometres.", "label": "number_drift"},
+    {"speaker": "me", "text": "What about that accident history?"},
+    {"speaker": "them", "text": "It was in a crash two years ago, the front was repaired.", "label": "contradiction"}
+  ]
+}

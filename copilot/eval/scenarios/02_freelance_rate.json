@@ -1,0 +1,19 @@
+{
+  "id": "02_freelance_rate",
+  "domain": "Freelance rate",
+  "lines": [
+    {"speaker": "them", "text": "My day rate is 600 euros, and I'm booked from the first of March.", "label": "honest"},
+    {"speaker": "me", "text": "Do you have capacity for a six week project?"},
+    {"speaker": "them", "text": "Six weeks is fine. I can start the first of March.", "label": "honest"},
+    {"speaker": "me", "text": "Who did the last project like this for you?"},
+    {"speaker": "them", "text": "Oh, I have a lot of happy clients, my work speaks for itself, you know how it is.", "label": "evasion"},
+    {"speaker": "me", "text": "Fine. Are you working alone?"},
+    {"speaker": "them", "text": "Yes, it's just me, I don't subcontract anything.", "label": "honest"},
+    {"speaker": "me", "text": "What is the rate again?"},
+    {"speaker": "them", "text": "Six hundred euros a day, as I said.", "label": "honest"},
+    {"speaker": "me", "text": "OK. Can we sign this week?"},
+    {"speaker": "them", "text": "Sure, though my rate for you is 750 euros a day now.", "label": "number_drift"},
+    {"speaker": "me", "text": "Is a colleague doing part of the work?"},
+    {"speaker": "them", "text": "Yes, my colleague will handle the design half, I've always worked with a partner.", "label": "contradiction"}
+  ]
+}

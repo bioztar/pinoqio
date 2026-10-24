@@ -1,0 +1,19 @@
+{
+  "id": "01_saas_renewal",
+  "domain": "SaaS renewal",
+  "lines": [
+    {"speaker": "them", "text": "Thanks for joining. Your renewal is 48 thousand dollars a year for 200 seats.", "label": "honest"},
+    {"speaker": "me", "text": "Last year we paid 40 thousand. Why the jump?"},
+    {"speaker": "them", "text": "Well, the platform has grown a lot, and our whole team is really committed to customer success.", "label": "evasion"},
+    {"speaker": "me", "text": "Can you hold it at 40 thousand?"},
+    {"speaker": "them", "text": "Let me be upfront, I misspoke earlier. The renewal is 52 thousand, because I forgot the new support tier.", "label": "honest"},
+    {"speaker": "me", "text": "Does that include premium support?"},
+    {"speaker": "them", "text": "Yes, premium support is included, with a four hour response time.", "label": "honest"},
+    {"speaker": "me", "text": "And what term are we signing?"},
+    {"speaker": "them", "text": "A two year term. The price is 52 thousand a year, locked.", "label": "honest"},
+    {"speaker": "me", "text": "Great. Let's confirm the annual price once more."},
+    {"speaker": "them", "text": "Right, so for the two year term it is 58 thousand a year.", "label": "number_drift"},
+    {"speaker": "me", "text": "And premium support is in that?"},
+    {"speaker": "them", "text": "We never include premium support, it has always been a paid add-on.", "label": "contradiction"}
+  ]
+}
