@@ -171,17 +171,29 @@
   });
 
   function connect() {
-    const ws = new WebSocket(`ws://${location.host}/ws`);
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
     ws.onopen = () => { $('status').textContent = 'connected'; };
-    ws.onmessage = e => {
-      const m = JSON.parse(e.data);
-      if (m.type === 'utterance') onUtterance(m); else if (m.type === 'verdict') onVerdict(m);
-    };
+    ws.onmessage = e => handle(JSON.parse(e.data));
     ws.onclose = () => { $('status').textContent = 'disconnected, retrying…'; setTimeout(connect, 1000); };
   }
 
+  function handle(m) {
+    if (m.type === 'utterance') onUtterance(m); else if (m.type === 'verdict') onVerdict(m);
+  }
+
+  function reset() {
+    times.clear(); sentAt.clear(); contradiction = null;
+    ['chips', 'ledger', 'transcript'].forEach(id => clear($(id)));
+    $('contra').classList.add('hidden');
+    $('ask').textContent = '…';
+    $('say').disabled = true;
+    setProb(0);
+  }
+
   setProb(0);
-  connect();
+  // web mode (web_bar.html) drives the UI itself through window.pinoqio instead of /ws
+  window.pinoqio = { handle, reset };
+  if (!window.PINOQIO_WEB) connect();
 })();
 </script>
 </body>

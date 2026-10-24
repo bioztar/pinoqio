@@ -12,6 +12,7 @@ import uvicorn
 
 from pinoqio import fake
 from pinoqio.events import Utterance, Verdict
+from pinoqio.record import recording
 from pinoqio.server import Hub, create_app
 
 log = logging.getLogger("pinoqio.app")
@@ -52,7 +53,10 @@ def make_source(args: argparse.Namespace):
         async for e in with_voice_hook(brain.verdicts(ears.utterances(args.source, **wavs))):
             yield e
 
-    return fake_source if args.source == "fake" else pipeline_source
+    source = fake_source if args.source == "fake" else pipeline_source
+    if not args.record:
+        return source
+    return lambda hub: recording(source(hub), args.record)
 
 
 def main() -> None:
@@ -61,6 +65,7 @@ def main() -> None:
     p.add_argument("--them-wav")
     p.add_argument("--me-wav")
     p.add_argument("--no-window", action="store_true")
+    p.add_argument("--record", metavar="PATH.jsonl", help="write every event with its time offset (feeds the web demo)")
     p.add_argument("--speed", type=float, default=1.0, help="fake source playback speed")
     args = p.parse_args()
     if args.source == "replay" and not (args.them_wav and args.me_wav):
