@@ -18,21 +18,16 @@
   * { box-sizing: border-box; }
   html, body { margin:0; height:100%; background:var(--bg); color:var(--txt);
     font:15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  body { display:flex; flex-direction:column; padding:10px; gap:8px; overflow:hidden; }
+  body { display:flex; flex-direction:column; padding:8px 10px; gap:5px; overflow:hidden; }
   .hero { position:relative; text-align:center; flex:none; }
-  svg#puppet { width:100%; height:185px; display:block; }
-  #pct { font-size:20px; font-weight:700; color:var(--p); transition:color .6s; margin-top:-6px; }
+  #pct { font-size:20px; font-weight:700; color:var(--p); transition:color .6s; margin-top:-4px; }
   #pct small { color:var(--mute); font-weight:400; font-size:12px; }
-  /* puppet */
-  #nose { transform-box:fill-box; transform-origin:0% 50%; fill:var(--p);
-    transition: transform .6s cubic-bezier(.3,1.2,.5,1), fill .6s; }
-  #nose.wobble { animation: wobble .5s ease-out; }
-  @keyframes wobble { 0%,100% { translate:0 0; } 25% { translate:0 -5px; } 55% { translate:0 4px; } 80% { translate:0 -2px; } }
-  #sweat { opacity:0; transition:opacity .5s; }
-  #brow-l, #brow-r { transition:transform .6s; transform-box:fill-box; transform-origin:center; }
-  #mouth-calm, #mouth-nerv { transition:opacity .5s; }
+  /* five stage frames stacked; the one for the current % fades in, the others out (up and down) */
+  #face { position:relative; width:216px; height:190px; margin:0 auto; }
+  #face img { position:absolute; inset:0; width:100%; height:100%; opacity:0; transition:opacity .4s ease-in-out; }
+  #face img.on { opacity:1; }
   .scroll { overflow-y:auto; }
-  .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 10px; flex:none; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:5px 10px; flex:none; }
   .panel h3 { margin:0 0 4px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }
   #chips { display:flex; flex-wrap:wrap; gap:5px; min-height:24px; }
   .chip { font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:#222733; }
@@ -45,11 +40,11 @@
   td, th { text-align:left; padding:2px 4px; }
   th { color:var(--mute); font-weight:500; font-size:11px; }
   tr:nth-child(even) td { background:#1c202a; }
-  #transcript { flex:1; min-height:70px; display:flex; flex-direction:column; gap:4px; }
+  #transcript { flex:1; min-height:40px; display:flex; flex-direction:column; gap:4px; }
   .u { max-width:85%; padding:4px 9px; border-radius:10px; font-size:13px; }
   .u.them { align-self:flex-start; background:#1d2b44; border-left:3px solid var(--accent); }
   .u.me { align-self:flex-end; background:#1b1e26; color:var(--mute); }
-  #say { flex:none; font-size:20px; font-weight:800; padding:12px; border:0; border-radius:10px; cursor:pointer;
+  #say { flex:none; font-size:18px; font-weight:800; padding:8px; border:0; border-radius:10px; cursor:pointer;
     background:#d9483b; color:#fff; }
   #say:disabled { background:#33363f; color:var(--mute); cursor:default; }
   #status { flex:none; font-size:11px; color:var(--mute); text-align:center; }
@@ -71,28 +66,9 @@
 </head>
 <body>
 <div class="hero">
-  <svg id="puppet" viewBox="0 0 420 240" role="img" aria-label="Pinoqio puppet; nose length shows lie probability">
-    <!-- hat -->
-    <path d="M70 62 Q112 -2 170 50 L176 66 Q120 50 70 66 Z" fill="#c2453a"/>
-    <path d="M168 52 Q198 22 214 4 Q196 36 178 66 Z" fill="#e8c14a"/>
-    <!-- ears + head -->
-    <ellipse cx="52" cy="128" rx="11" ry="18" fill="#d9a15e"/>
-    <ellipse cx="188" cy="128" rx="11" ry="18" fill="#d9a15e"/>
-    <circle cx="120" cy="124" r="68" fill="#e7b574"/>
-    <path d="M70 100 Q120 90 170 100 M66 130 Q120 122 174 130 M72 158 Q120 150 168 158" stroke="#c48f4f" stroke-width="2" fill="none" opacity=".5"/>
-    <!-- eyes -->
-    <circle cx="96" cy="112" r="13" fill="#fff"/><circle cx="144" cy="112" r="13" fill="#fff"/>
-    <circle id="pupil-l" cx="99" cy="113" r="6" fill="#222"/><circle id="pupil-r" cx="147" cy="113" r="6" fill="#222"/>
-    <rect id="brow-l" x="82" y="88" width="28" height="6" rx="3" fill="#7a4a1e"/>
-    <rect id="brow-r" x="130" y="88" width="28" height="6" rx="3" fill="#7a4a1e"/>
-    <!-- mouth -->
-    <path id="mouth-calm" d="M92 160 Q120 180 148 160" stroke="#7a2b22" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path id="mouth-nerv" d="M96 170 Q106 158 116 170 Q126 158 136 170 Q142 164 146 168" stroke="#7a2b22" stroke-width="5" fill="none" stroke-linecap="round" opacity="0"/>
-    <!-- nose: base at head centre-right, grows along +x -->
-    <path id="nose" d="M118 128 L126 120 L330 128 L126 136 Z"/>
-    <!-- sweat -->
-    <path id="sweat" d="M176 72 Q164 92 176 98 Q188 92 176 72 Z" fill="#7fd4ff"/>
-  </svg>
+  <div id="face" role="img" aria-label="Pinoqio; the longer the nose, the likelier the lie">
+    <img src="/static/nose/0.webp" alt="" class="on"><img src="/static/nose/1.webp" alt=""><img src="/static/nose/2.webp" alt=""><img src="/static/nose/3.webp" alt=""><img src="/static/nose/4.webp" alt="">
+  </div>
   <div id="pct">0% <small>chance of lying</small></div>
   <div id="badge"></div>
 </div>
@@ -133,21 +109,11 @@
   };
 
   function setProb(p) {
-    const grew = p > prob;
     prob = p;
     const hue = Math.round(120 - 120 * p);          // green -> amber -> red
     document.documentElement.style.setProperty('--p', `hsl(${hue} 75% 52%)`);
-    const nose = $('nose');
-    nose.style.transform = `rotate(${(-p * 14).toFixed(1)}deg) scaleX(${(0.22 + 0.78 * p).toFixed(3)})`;
-    if (grew) {
-      nose.classList.remove('wobble'); void nose.getBoundingClientRect(); nose.classList.add('wobble');
-    }
-    const nervous = p >= 0.6;
-    $('sweat').style.opacity = nervous ? 1 : 0;
-    $('mouth-calm').style.opacity = nervous ? 0 : 1;
-    $('mouth-nerv').style.opacity = nervous ? 1 : 0;
-    $('brow-l').style.transform = `rotate(${(p * 18).toFixed(1)}deg) translateY(${(-p * 4).toFixed(1)}px)`;
-    $('brow-r').style.transform = `rotate(${(-p * 18).toFixed(1)}deg) translateY(${(-p * 4).toFixed(1)}px)`;
+    const stage = Math.min(4, Math.floor(p * 5));   // 0-20, 20-40, 40-60, 60-80, 80-100 %
+    $('face').querySelectorAll('img').forEach((img, i) => img.classList.toggle('on', i === stage));
     $('pct').firstChild.nodeValue = `${Math.round(p * 100)}% `;
   }
 
