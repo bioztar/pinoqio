@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pinoqio live script</title>
+<style>
+  body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1d1d1f; background: #fff;
+    max-width: 860px; margin: 28px auto; padding: 0 16px; }
+  h1 { color: #8a4b14; border-bottom: 3px solid #d98a2b; padding-bottom: 6px; }
+  h2 { color: #8a4b14; border-left: 5px solid #d98a2b; padding-left: 10px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+  button { font: inherit; font-size: 14px; padding: 4px 12px; border-radius: 8px; border: 1px solid #d98a2b; background: #fff7ee; cursor: pointer; }
+  ol { padding-left: 26px; }
+  li { margin: 8px 0; }
+  .cue { color: #8a8f99; font-size: 14px; font-style: italic; }
+  .wait { color: #b5482a; font-size: 14px; font-weight: 600; }
+  .box { background: #f6f7f9; border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+  @media print { button { display: none; } .two { grid-template-columns: 1fr 1fr; } li { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+<h1>Pinoqio: live test script</h1>
+<div class="box">
+  <b>Setup:</b> Teams call connected (your speaker = Pinoqio Out or MacBook speakers, mic = MacBook Air Microphone).
+  Then: <code>cd /Users/alex/DEV/pinoqio/copilot &amp;&amp; uv run python -m pinoqio.app --source live --voice public --demo-safe</code><br>
+  <b>Rhythm:</b> one sentence each. After every supplier line, wait <b>~5–8 s</b> until the nose reacts, then speak.
+</div>
+
+<div class="two">
+<section>
+  <h2>Vitaly (buyer) <button data-copy="me">Copy</button></h2>
+  <ol id="me">
+    <li>Hi, thanks for joining. How's your week going?</li>
+    <li>We need 200 laptops. What's your price per unit?</li>
+    <li>And when can you deliver?</li>
+    <li>What warranty do you offer?</li>
+    <li>OK. So, to confirm the total?</li>
+    <li>And delivery is still two weeks?</li>
+    <li>Is 1,050 really your final price?</li>
+    <li>And payment terms?</li>
+    <li>Please send everything in writing. Thanks!</li>
+  </ol>
+  <p class="cue">After line 9: click “Summary” in the window.</p>
+</section>
+
+<section>
+  <h2>Partner (supplier) <button data-copy="them">Copy</button></h2>
+  <ol id="them">
+    <li>Busy, but good. Lots of orders this month.</li>
+    <li>For 200 units, it's nine hundred euros each, delivery included.</li>
+    <li>Two weeks from the order, guaranteed.</li>
+    <li><span class="cue">(pause, vague)</span> Well… it depends on the model. Our support is really very good, many clients are happy.</li>
+    <li>Sure. Two hundred times one thousand fifty, plus delivery.</li>
+    <li>Actually, more like five or six weeks, with the current stock.</li>
+    <li><span class="cue">(slower, small pause, a bit higher voice)</span> Yes… yes, that's our final price. Really, we can't go lower.</li>
+    <li><span class="cue">(calm, clear)</span> Net thirty days from delivery, same as always.</li>
+    <li>Will do. Have a good day!</li>
+  </ol>
+</section>
+</div>
+
+<h2>What Pinoqio should do</h2>
+<ol>
+  <li>Small talk: nose small, ~12%.</li>
+  <li>Price 900 + delivery included → promise ledger.</li>
+  <li>Two weeks guaranteed → ledger.</li>
+  <li>Warranty dodge → “evasion” chip, % up, “Ask this next”.</li>
+  <li><b>1,050 plus delivery → says out loud</b> (funny line quoting “nine hundred… delivery included” vs “one thousand fifty…”), BOING!</li>
+  <li><b>Five or six weeks → says out loud</b> (second funny line).</li>
+  <li><b>Claim check:</b> “Probably false · ~70%” from voice stress + hedging (screen only).</li>
+  <li>Net 30, calm → stays low, “Probably true”.</li>
+  <li>Summary: what changed, red flags, next email.</li>
+</ol>
+<p class="wait">If nothing happens for 15 s after a supplier line: keep going, tell helm what you saw.</p>
+
+<script>
+  document.querySelectorAll("button[data-copy]").forEach(b => b.addEventListener("click", async () => {
+    const items = [...document.querySelectorAll("#" + b.dataset.copy + " li")].map((li, i) => `${i + 1}. ${li.innerText}`);
+    try { await navigator.clipboard.writeText(items.join("\n")); b.textContent = "Copied"; }
+    catch { b.textContent = "Select + copy"; }
+    setTimeout(() => (b.textContent = "Copy"), 1500);
+  }));
+</script>
+</body>
+</html>
