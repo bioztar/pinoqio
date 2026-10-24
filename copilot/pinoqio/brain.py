@@ -18,7 +18,7 @@ from pinoqio.verifier import Verification, refine
 log = logging.getLogger(__name__)
 
 HEDGE_S = 3.5          # Gemma alone for this long, then Nebius races it
-TOTAL_BUDGET_S = 8.0   # analysis deadline per line
+TOTAL_BUDGET_S = 11.0  # analysis deadline per line; 1 s over Gemma's own 10 s timeout so a slow Gemma still lands when Nebius is down
 GEMMA_LABEL = "Gemma 4"
 FALLBACK_LABEL = "Nebius (fallback)"
 NEBIUS_ANALYST_TIMEOUT_S = 4.5  # per model in the Nebius chain

@@ -42,6 +42,8 @@ def parse_json(text: str) -> dict:
             data = json.loads(cleaned[start : end + 1])
         except json.JSONDecodeError as e:
             raise GemmaError(f"bad JSON: {e}") from e
+    if isinstance(data, list) and len(data) == 1:  # models sometimes wrap the object in a one-item list
+        data = data[0]
     if not isinstance(data, dict):
         raise GemmaError("JSON is not an object")
     return data
