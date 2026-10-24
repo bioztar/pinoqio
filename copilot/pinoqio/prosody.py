@@ -85,6 +85,15 @@ class Baseline:
         return Baseline({**self.samples, **merged})
 
 
+# Smallest spread worth trusting per feature: a 3-sample baseline of identical values
+# would otherwise turn one extra filler into a 2,000,000-sigma outlier.
+KEY_SD_FLOOR = {
+    "pitch_mean_hz": 8.0, "pitch_sd_hz": 4.0, "rate_wps": 0.3,
+    "pause_ratio": 0.05, "latency_s": 0.4, "filler_count": 0.7,
+}
+Z_CAP = 4.0
+
+
 def with_z(feats: dict[str, float], baseline: Baseline) -> dict[str, float]:
     """feats plus `<key>_z` against the baseline; z = 0 until 3 prior samples exist."""
     z = {}
@@ -93,6 +102,6 @@ def with_z(feats: dict[str, float], baseline: Baseline) -> dict[str, float]:
         if len(past) < MIN_BASELINE:
             z[f"{key}_z"] = 0.0
         else:
-            sd = max(statistics.pstdev(past), SD_FLOOR)
-            z[f"{key}_z"] = (value - statistics.fmean(past)) / sd
+            sd = max(statistics.pstdev(past), KEY_SD_FLOOR.get(key, SD_FLOOR))
+            z[f"{key}_z"] = max(-Z_CAP, min(Z_CAP, (value - statistics.fmean(past)) / sd))
     return {**feats, **{k: (0.0 if math.isnan(v) else v) for k, v in z.items()}}

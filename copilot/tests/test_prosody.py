@@ -62,3 +62,10 @@ def test_baseline_is_immutable():
     base = Baseline()
     new = base.update({"x": 1.0})
     assert base.samples == {} and new.samples == {"x": (1.0,)}
+
+
+def test_z_is_floored_and_capped():
+    from pinoqio.prosody import Baseline, with_z
+    b = Baseline(samples={"filler_count": (0.0, 0.0, 0.0)})
+    z = with_z({"filler_count": 2.0}, b)["filler_count_z"]
+    assert 2.0 < z <= 4.0

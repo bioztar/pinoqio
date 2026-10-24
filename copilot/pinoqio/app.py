@@ -5,6 +5,7 @@ import logging
 import socket
 import threading
 import time
+from pathlib import Path
 from collections.abc import AsyncIterator
 
 import uvicorn
@@ -44,18 +45,12 @@ def make_source(args: argparse.Namespace):
         async for e in with_voice_hook(fake.events(args.speed)):
             yield e
 
-    async def pipeline_source(hub: Hub):
-        # Lazy: ears/brain land in other lanes. ponytail: assumes ears.utterances(**wavs) / brain.verdicts(stream).
-        from pinoqio import brain, ears
-        kwargs = {"them_wav": args.them_wav, "me_wav": args.me_wav} if args.source == "replay" else {}
-
-        async def tee():
-            async for u in ears.utterances(**kwargs):
-                hub.publish(u)
-                yield u
-
-        async for v in with_voice_hook(brain.verdicts(tee())):
-            yield v
+    async def pipeline_source(_: Hub):
+        from pinoqio import brain, ears  # lazy: needs audio deps and keys
+        wavs = {"them_wav": Path(args.them_wav), "me_wav": Path(args.me_wav)} if args.source == "replay" else {}
+        # brain.verdicts passes every utterance through, then its verdict
+        async for e in with_voice_hook(brain.verdicts(ears.utterances(args.source, **wavs))):
+            yield e
 
     return fake_source if args.source == "fake" else pipeline_source
 
