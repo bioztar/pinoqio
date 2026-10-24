@@ -9,11 +9,11 @@ import logging
 from dataclasses import replace
 from typing import AsyncIterator, Sequence
 
-from pinoqio import nebius
+from pinoqio import nebius, quickcheck
 from pinoqio.analyst import Analysis, Ask, analyze, merge_ledger
 from pinoqio.events import Chip, LedgerItem, Utterance, Verdict
 from pinoqio.gemma import ask_json
-from pinoqio.score import score
+from pinoqio.score import _clock, score
 from pinoqio.verifier import Verification, refine
 
 log = logging.getLogger(__name__)
@@ -85,11 +85,20 @@ async def verdicts(
 ) -> AsyncIterator[Utterance | Verdict]:
     history: tuple[Utterance, ...] = ()
     ledger: tuple[LedgerItem, ...] = ()
+    seen: dict = {}  # quickcheck: topic -> (first value, time)
     async for u in utterances:
         history = history + (u,)
         yield u
         if u.speaker != "them":
             continue
+        # Instant path: a changed price/date is flagged (and spoken) before any model call.
+        last_me = next((h.text for h in reversed(history) if h.speaker == "me"), "")
+        seen, drift = quickcheck.check(u.text, last_me, u.t_start, seen)
+        if drift:
+            label = f"{drift.topic.capitalize()}: {drift.then}{_clock(drift.then_t)}, now {drift.now}"
+            log.info("quickcheck utterance %s: %s", u.id, label)
+            yield Verdict(utterance_id=u.id, probability=0.9, verbal=0.9, vocal=0.12,
+                          chips=(Chip("number_drift", label, 0.9), _model_chip("instant check")), ledger=ledger)
         t0 = time.monotonic()
         analysis, answered = await _analyze(history, ledger, ask, fallback)
         t1 = time.monotonic()
