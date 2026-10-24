@@ -28,6 +28,7 @@
   #chips { display:flex; flex-wrap:wrap; gap:5px; min-height:24px; }
   .chip { font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:#222733; }
   .chip.strong { border-color:#d96a5b; color:#ffb4a8; }
+  #badge { text-align:center; font-size:11px; color:var(--mute); min-height:14px; }
   #contra .q { font-style:italic; }
   #contra .t { color:var(--mute); font-size:12px; }
   #ask { color:var(--accent); font-weight:600; }
@@ -71,6 +72,7 @@
     <path id="sweat" d="M176 72 Q164 92 176 98 Q188 92 176 72 Z" fill="#7fd4ff"/>
   </svg>
   <div id="pct">0% <small>chance of lying</small></div>
+  <div id="badge"></div>
 </div>
 
 <div class="panel"><h3>Evidence</h3><div id="chips"></div></div>
@@ -134,7 +136,9 @@
   function onVerdict(v) {
     setProb(v.probability);
     const chips = $('chips'); clear(chips);
-    v.chips.forEach(c => add(chips, 'span', c.label, 'chip' + (c.weight >= 0.25 ? ' strong' : '')));
+    // kind "model" chips say which model answered / verified; they go in the badge, not the evidence
+    v.chips.filter(c => c.kind !== 'model').forEach(c => add(chips, 'span', c.label, 'chip' + (c.weight >= 0.25 ? ' strong' : '')));
+    $('badge').textContent = v.chips.filter(c => c.kind === 'model').map(c => c.label).join(' · ');
     $('ask').textContent = v.ask_next || '…';
     const led = $('ledger'); clear(led);
     v.ledger.forEach(r => {
