@@ -95,3 +95,17 @@ def test_public_mode_ignores_plain_hedging():
     from pinoqio.voice import PolicyState, decide_public
     _, a = decide_public(PolicyState(), _verdict_with(chips=[Chip("hedging", "Hedging: maybe", 0.3)]))
     assert a is None
+
+
+def test_instant_and_model_callouts_for_the_same_change_speak_once():
+    from pinoqio.events import Chip, Contradiction
+    from pinoqio.voice import PolicyState, decide_public
+    instant = _verdict_with(chips=[Chip("number_drift", "Price: 900 at 0:12, now 1,050", 0.9)])
+    model = _verdict_with(contradiction=Contradiction("Sure. 200 times 1,050, plus delivery.", "For 200 units, it's 900 euros each", 3, 0.9))
+    delivery = _verdict_with(chips=[Chip("number_drift", "Delivery: 2 weeks at 0:20, now 5-6 weeks", 0.9)])
+    s, a1 = decide_public(PolicyState(), instant)
+    s, a2 = decide_public(s, model)
+    s, a3 = decide_public(s, delivery)
+    assert a1 and "1,050" in a1.text
+    assert a2 is None
+    assert a3 and "5-6 weeks" in a3.text

@@ -29,7 +29,8 @@ def free_port() -> int:
 async def with_voice_hook(stream: AsyncIterator[Utterance | Verdict]) -> AsyncIterator[Utterance | Verdict]:
     """Pass events through; hand verdicts to the voice lane's auto policy if it exists."""
     try:
-        from pinoqio.voice import on_verdict
+        from pinoqio.voice import on_verdict, prewarm
+        asyncio.create_task(prewarm())
     except (ImportError, AttributeError):
         on_verdict = None
     async for event in stream:

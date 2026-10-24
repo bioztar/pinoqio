@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -30,6 +31,7 @@ DEFAULT_PUBLIC_DEVICE = "MacBook Air Speakers"
 WHISPER_MIN_PROB = 0.6
 WHISPER_GAP_S = 8.0
 INTERJECT_MIN_CONF = 0.85
+OPENER = "Hold on, hold on!"
 MAX_CUE_WORDS = 8
 MAX_QUOTE_WORDS = 10
 
@@ -154,8 +156,34 @@ def decide_public(state: PolicyState, v: Verdict) -> tuple[PolicyState, Action |
     hit = callout_for(v)
     if hit is None or hit[0] in state.said:
         return state, None
-    key, (then, now) = hit
+    _, (then, now) = hit
+    key = value_key(then, now)
+    if any(_same(key, k) for k in state.said):
+        return state, None
     return replace(state, said=state.said | {key}), Action("interject", callout_line(then, now, len(state.said)))
+
+
+def _same(a: str, b: str) -> bool:
+    """Two callouts are the same inconsistency when their 'then' values and 'now' values overlap
+    (the model quotes '200 units, 900 euros' where the instant check saw just '900')."""
+    if a == b:
+        return True
+    if not (a.startswith("v:") and b.startswith("v:")):
+        return False
+    at, an = (set(x.split("|")) - {""} for x in a[2:].split(">"))
+    bt, bn = (set(x.split("|")) - {""} for x in b[2:].split(">"))
+    return bool(at & bt) and bool((an - at) & (bn - bt))
+
+
+def value_key(then: str, now: str) -> str:
+    """Same inconsistency, however it was worded: the instant check's '900 -> 1,050' and the
+    model's 'nine hundred euros each... -> 1,050 plus delivery' share the numbers they quote."""
+    def toks(s: str) -> list[str]:
+        s = s.lower().replace(",", "")
+        nums = re.findall(r"\d+(?:\.\d+)?", s)
+        months = re.findall(r"\b(january|february|march|april|may|june|july|august|september|october|november|december)\b", s)
+        return nums + months or [w for w in re.findall(r"[a-z]+", s) if len(w) > 3][:3]
+    return "v:" + "|".join(sorted(set(toks(then)))) + ">" + "|".join(sorted(set(toks(now))))
 
 
 # ---------- TTS ----------
@@ -209,12 +237,28 @@ class Voice:
         self._voice_id = voice_id or os.environ.get("PINOQIO_VOICE_ID", DEFAULT_VOICE)
         self._lock = asyncio.Lock()
         self._state = PolicyState()
+        self._opener: np.ndarray | None = None  # cached "Hold on!", plays while the real line synthesizes
 
-    async def _speak(self, text: str, device_name: str) -> None:
+    async def prewarm(self) -> None:
+        """Synthesize the opener once, so the first callout starts instantly."""
+        try:
+            self._opener = await asyncio.get_running_loop().run_in_executor(None, synth_pcm, OPENER, self._voice_id)
+        except Exception:
+            log.warning("voice: opener prewarm failed; callouts start after TTS")
+
+    async def _speak(self, text: str, device_name: str, opener: bool = False) -> None:
         async with self._lock:
             try:
                 loop = asyncio.get_running_loop()
-                pcm = await loop.run_in_executor(None, synth_pcm, text, self._voice_id)
+                synth = loop.run_in_executor(None, synth_pcm, text, self._voice_id)
+                if opener and self._opener is not None:
+                    from pinoqio.audio import SPEAKING
+                    SPEAKING.set()
+                    try:
+                        await loop.run_in_executor(None, play_pcm, self._opener, resolve_device(device_name))
+                    finally:
+                        SPEAKING.clear()
+                pcm = await synth
                 device = resolve_device(device_name)
                 log.info("voice: playing %r on %r (device %s)", text, device_name, device)
                 from pinoqio.audio import SPEAKING
@@ -251,7 +295,7 @@ class Voice:
             self._state, action = decide_public(self._state, v)
             if action is not None:
                 dev = os.environ.get("PINOQIO_PUBLIC_DEVICE", DEFAULT_PUBLIC_DEVICE)
-                asyncio.create_task(self._speak(action.text, dev))  # the lock queues clips in order
+                asyncio.create_task(self._speak(action.text, dev, opener=True))  # the lock queues clips in order
             return action
         t = asyncio.get_running_loop().time() if now is None else now
         new_state, action = decide(self._state, v, t)
@@ -278,6 +322,12 @@ def _shared() -> Voice:
     if _voice is None:
         _voice = Voice()
     return _voice
+
+
+async def prewarm() -> None:
+    """Called by the app at start: cache the opener clip for instant public callouts."""
+    if voice_mode() == "public":
+        await _shared().prewarm()
 
 
 def on_verdict(v: Verdict) -> Action | None:
