@@ -166,7 +166,7 @@
       <span><img class="mono" src="img/logos/nebius.svg" alt=""><img src="img/logos/deepseek-color.svg" alt="">Open model on Nebius</span>
       <span>· MIT · github.com/bioztar/pinoqio</span>
     </div>
-    <span class="hint">→ / click to build · ← back</span>
+    <span class="hint">→ / click to build · then part 2: Pinoqio as a judge · ← back</span>
   </footer>
 </div>
 <script>
@@ -194,7 +194,10 @@
     burst.classList.toggle("show", Boolean(s.burst));
     if (animate) { face.classList.remove("boing"); void face.offsetWidth; face.classList.add("boing"); }
   }
-  function go(d) { const n = Math.max(0, Math.min(STAGES.length - 1, step + d)); if (n !== step) { step = n; render(d > 0); } }
+  function go(d) {
+    if (d > 0 && step === STAGES.length - 1) { location.href = "judge-deck.html"; return; }  // part 2: the judge
+    const n = Math.max(0, Math.min(STAGES.length - 1, step + d)); if (n !== step) { step = n; render(d > 0); }
+  }
   document.addEventListener("keydown", e => {
     if (["ArrowRight", " ", "PageDown", "Enter"].includes(e.key)) go(1);
     if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) go(-1);
