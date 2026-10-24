@@ -56,7 +56,7 @@ class PolicyState:
 
 
 def _words(text: str, n: int) -> str:
-    w = text.split()
+    w = text.strip().rstrip(".,;:!?").split()  # a trailing "." before the ellipsis/comma sounds broken aloud
     return " ".join(w[:n]) + ("..." if len(w) > n else "")
 
 
@@ -148,6 +148,7 @@ class Voice:
                 loop = asyncio.get_running_loop()
                 pcm = await loop.run_in_executor(None, synth_pcm, text, self._voice_id)
                 device = resolve_device(device_name)
+                log.info("voice: playing %r on %r (device %s)", text, device_name, device)
                 await loop.run_in_executor(None, play_pcm, pcm, device)
             except Exception:  # never crash the live pipeline
                 log.exception("voice: speak failed, skipping %r", text)
@@ -200,5 +201,6 @@ def on_verdict(v: Verdict) -> Action | None:
     return _shared().on_verdict(v)
 
 
-def interject(text: str, force: bool = False) -> "asyncio.Task | None":
+def interject(text: str, force: bool = True) -> "asyncio.Task | None":
+    """The "Say it" button: an explicit press always speaks (and counts as the session's interjection)."""
     return _shared().interject(text, force)

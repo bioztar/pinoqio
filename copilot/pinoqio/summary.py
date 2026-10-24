@@ -128,5 +128,5 @@ async def summarize(events: Iterable[Any], ask: Ask | None = None) -> Summary | 
         data = await (ask(_prompt(d), SYSTEM) if ask else nebius.ask_json(_prompt(d), SYSTEM, model, TIMEOUT_S))
         return parse(data, d, nebius.short_name(model))
     except Exception as e:
-        log.warning("summary failed, using offline: %s", type(e).__name__)
+        log.warning("summary failed, using offline: %s: %s", type(e).__name__, e)
         return offline(d)

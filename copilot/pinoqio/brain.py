@@ -34,12 +34,12 @@ async def _analyze(
     try:
         return await asyncio.wait_for(analyze(history, ledger, ask), GEMMA_BUDGET_S), GEMMA_LABEL
     except Exception as e:  # a failed call must never kill the live pipeline
-        log.warning("gemma failed for utterance %s: %s, falling back to nebius", uid, type(e).__name__)
+        log.warning("gemma failed for utterance %s: %s: %s, falling back to nebius", uid, type(e).__name__, e)
     try:
         label = f"{nebius.short_name(config.nebius_model())} (fallback)"
         return await analyze(history, ledger, fallback), label
     except Exception as e:
-        log.warning("fallback failed for utterance %s: %s", uid, type(e).__name__)
+        log.warning("fallback failed for utterance %s: %s: %s", uid, type(e).__name__, e)
         return Analysis(utterance_id=uid), None  # vocal-only verdict
 
 

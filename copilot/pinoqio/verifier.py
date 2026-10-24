@@ -98,7 +98,7 @@ async def refine(
     try:
         v = await verify(claim, history, ledger, ask)
     except Exception as e:  # keep Gemma's result, but never let it fire a public interjection
-        log.warning("verifier failed: %s", type(e).__name__)
+        log.warning("verifier failed: %s: %s", type(e).__name__, e)
         c = analysis.contradiction
         if c and c.confidence > UNVERIFIED_CAP:
             analysis = replace(analysis, contradiction=replace(c, confidence=UNVERIFIED_CAP))
