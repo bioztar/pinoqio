@@ -28,7 +28,10 @@
   #face img.on { opacity:1; }
   /* ?art=scene: partner's photo player in the face slot (3:2) instead of the cartoon frames */
   /* full-width photo in its own area; all text lives in the cards below it (bottom of the photo is cropped) */
-  #scenebox { display:none; width:100%; height:180px; overflow:hidden; border-radius:10px; }
+  #scenebox { display:none; width:100%; overflow:hidden; border-radius:10px; flex:none; }
+  /* whole photo (3:2) is taller than the cartoon slot: the window scrolls, Say it stays pinned */
+  body.scene { overflow-y:auto; }
+  body.scene #say { position:sticky; bottom:0; z-index:3; }
   #scene { width:100%; aspect-ratio:3/2; height:auto; border:0; display:block; }
   body.scene #scenebox { display:block; }
   body.scene #face { display:none; }
