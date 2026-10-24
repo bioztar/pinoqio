@@ -10,7 +10,7 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse
 
-from pinoqio import record
+from pinoqio import live, record
 from pinoqio.server import UI_FILE
 
 log = logging.getLogger("pinoqio.web")
@@ -23,7 +23,7 @@ def render_index(live: bool) -> str:
     return UI_FILE.read_text(encoding="utf-8").replace("<body>", "<body>\n" + bar, 1)
 
 
-def create_web_app(replay_dir: Path = REPLAY_DIR, live_passcode: str | None = None) -> FastAPI:
+def create_web_app(replay_dir: Path = REPLAY_DIR, live_passcode: str | None = None, live_pipeline=None) -> FastAPI:
     events = record.load(replay_dir / "events.jsonl")
     app = FastAPI()
     index = render_index(live=bool(live_passcode))
@@ -50,6 +50,13 @@ def create_web_app(replay_dir: Path = REPLAY_DIR, live_passcode: str | None = No
             await sock.close()
         except WebSocketDisconnect:
             pass
+
+    if live_passcode:
+        live_state = live.LiveState()
+
+        @app.websocket("/live")
+        async def live_ws(sock: WebSocket) -> None:
+            await live.run_session(sock, live_passcode, live_state, live_pipeline or live.real_pipeline)
 
     return app
 

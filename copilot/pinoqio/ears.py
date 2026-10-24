@@ -32,20 +32,26 @@ def _to_utterance(uid: int, seg: stt.Segment, baseline: prosody.Baseline, last_m
 
 
 async def utterances(
-    source: Literal["live", "replay"],
+    source: Literal["live", "replay", "stream"],
     them_wav: Path | None = None,
     me_wav: Path | None = None,
     *,
     realtime: bool = True,
     segments_fn=stt.segments,
+    streams: tuple[AsyncIterator, AsyncIterator] | None = None,
 ) -> AsyncIterator[Utterance]:
+    """`stream` = caller supplies `streams=(them, me)` 16 kHz mono int16 chunk iterators (web live mode)."""
     if source == "replay" and (them_wav is None or me_wav is None):
         raise ValueError("replay needs both them_wav and me_wav")
-    if source not in ("live", "replay"):
+    if source == "stream" and streams is None:
+        raise ValueError("stream needs streams=(them, me)")
+    if source not in ("live", "replay", "stream"):
         raise ValueError(f"unknown source {source!r}")
 
     async with AsyncExitStack() as stack:
-        if source == "live":
+        if source == "stream":
+            them, me = streams
+        elif source == "live":
             them, me = await stack.enter_async_context(audio.open_pair())
         else:
             them, me = replay.wav_chunks(them_wav, realtime), replay.wav_chunks(me_wav, realtime)
