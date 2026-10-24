@@ -66,7 +66,8 @@ def make_source(args: argparse.Namespace):
             yield e
 
     raw = fake_source if args.source == "fake" else pipeline_source
-    source = lambda hub: with_summary(raw(hub))  # noqa: E731
+    # fake.events already ends with a scripted summary (no network); real sources get one from Nebius
+    source = raw if args.source == "fake" else (lambda hub: with_summary(raw(hub)))
     if not args.record:
         return source
     return lambda hub: recording(source(hub), args.record)

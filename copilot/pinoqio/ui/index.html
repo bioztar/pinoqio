@@ -47,7 +47,11 @@
   .hidden { display:none; }
   #foot { flex:none; display:flex; justify-content:center; gap:12px; align-items:center; }
   .link { background:none; border:0; color:var(--accent); font-size:11px; cursor:pointer; padding:0; }
-  #summary { max-height:46vh; font-size:13px; }
+  /* full-height overlay on a dark backdrop; close returns to the live view */
+  #summary { position:fixed; inset:0; z-index:5; border-radius:0; border:0; padding:12px 14px; font-size:14px;
+    background:rgb(10,12,16); }
+  #summary h3 { position:sticky; top:-12px; background:rgb(10,12,16); padding:6px 0 8px; margin:-12px 0 6px; font-size:12px; z-index:1; }
+  #summary h3 .link { float:right; font-size:13px; border:1px solid var(--line); border-radius:6px; padding:2px 10px; }
   #summary h3 small { text-transform:none; letter-spacing:0; }
   #sum-body h4 { margin:8px 0 2px; font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
   #sum-body div { padding:1px 0; }
