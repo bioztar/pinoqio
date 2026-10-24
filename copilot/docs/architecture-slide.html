@@ -10,146 +10,198 @@
     --gemma: #4f8cff; --eleven: #b06cff; --nebius: #2fd29a; --local: #8e98ad; --nose: #ff5a3c;
   }
   * { box-sizing: border-box; margin: 0; }
-  html, body { height: 100%; background: var(--bg); }
-  body {
-    font: 16px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink);
-    display: grid; place-items: center;
-  }
-  .slide { width: 1600px; height: 900px; padding: 48px 56px; display: grid; grid-template-rows: auto 1fr auto; gap: 26px; }
-  header { display: flex; align-items: baseline; justify-content: space-between; }
+  html, body { height: 100%; background: var(--bg); overflow: hidden; }
+  body { font: 16px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--ink);
+    display: grid; place-items: center; cursor: pointer; }
+  .slide { width: 1600px; height: 900px; padding: 40px 48px; display: grid;
+    grid-template-columns: 330px 1fr; grid-template-rows: auto 1fr auto; gap: 18px 34px; transform-origin: center; flex: none; }
+  header { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; }
   h1 { font-size: 40px; letter-spacing: -.5px; }
   h1 span { color: var(--nose); }
   header p { color: var(--muted); font-size: 19px; }
 
-  .flow { display: grid; grid-template-columns: 1fr 34px 1.05fr 34px 1.35fr 34px 1.05fr; align-items: stretch; }
-  .col { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
-  .arrow { display: grid; place-items: center; color: var(--muted); font-size: 30px; }
-  .step { font-size: 13px; text-transform: uppercase; letter-spacing: 1.6px; color: var(--muted); margin-bottom: 2px; }
+  /* Pinoqio: nose grows as the pipeline is explained */
+  .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; position: relative; }
+  .face { position: relative; width: 330px; height: 340px; }
+  .face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0;
+    transition: opacity .45s ease; }
+  .face img.on { opacity: 1; }
+  .face.boing { animation: boing .65s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes boing { 0% { transform: scale(1); } 30% { transform: scale(1.12, .92) rotate(-3deg); }
+    60% { transform: scale(.95, 1.06) rotate(2deg); } 100% { transform: scale(1); } }
+  .pct { font-size: 46px; font-weight: 800; transition: color .4s; }
+  .pct small { font-size: 17px; font-weight: 500; color: var(--muted); }
+  .burst { position: absolute; top: 4px; right: -6px; font: 900 34px/1 "Arial Black", Impact, sans-serif; color: var(--nose);
+    -webkit-text-stroke: 1.5px #fff; transform: rotate(8deg) scale(0); transition: transform .35s cubic-bezier(.3,1.8,.5,1); }
+  .burst.show { transform: rotate(8deg) scale(1); }
+  .caption { color: var(--muted); font-size: 15px; text-align: center; max-width: 300px; min-height: 40px; }
 
-  .card {
-    background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--local);
-    border-radius: 12px; padding: 14px 16px;
-  }
-  .card h3 { font-size: 19px; margin-bottom: 4px; }
-  .card p { color: var(--muted); font-size: 15px; }
-  .card .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 99px; margin-bottom: 7px; color: #0d1220; }
-  .gemma { border-left-color: var(--gemma); } .gemma .tag { background: var(--gemma); }
-  .eleven { border-left-color: var(--eleven); } .eleven .tag { background: var(--eleven); }
-  .nebius { border-left-color: var(--nebius); } .nebius .tag { background: var(--nebius); }
-  .local .tag { background: var(--local); }
-  .big { padding: 18px 18px; }
-  .big h3 { font-size: 22px; }
-  ul { padding-left: 18px; color: var(--muted); font-size: 15px; }
-  li { margin: 2px 0; }
-  li b { color: var(--ink); font-weight: 600; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: start; align-self: center; }
+  .col { display: flex; flex-direction: column; gap: 12px; opacity: .1; filter: grayscale(1);
+    transform: translateY(14px); transition: opacity .5s, transform .5s, filter .5s; }
+  .col.on { opacity: 1; filter: none; transform: none; }
+  .col.now .step { color: var(--nose); }
+  .step { font-size: 13px; text-transform: uppercase; letter-spacing: 1.6px; color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--local); min-height: 120px;
+    border-radius: 12px; padding: 13px 15px; }
+  .card h3 { font-size: 21px; margin-bottom: 5px; }
+  .card p, .card li { color: var(--muted); font-size: 16px; }
+  .card ul { padding-left: 17px; }
+  .card b { color: var(--ink); font-weight: 600; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12.5px; font-weight: 700;
+    letter-spacing: .5px; text-transform: uppercase; }
+  .brand img { width: 26px; height: 26px; }
+  .brand img.mono { filter: invert(1); }
+  .gemma { border-left-color: var(--gemma); } .gemma .brand { color: var(--gemma); }
+  .eleven { border-left-color: var(--eleven); } .eleven .brand { color: var(--eleven); }
+  .nebius { border-left-color: var(--nebius); } .nebius .brand { color: var(--nebius); }
+  .local .brand { color: var(--local); }
 
-  .out { display: flex; align-items: center; gap: 14px; }
-  .nosebar { height: 10px; border-radius: 99px; background: linear-gradient(90deg, #2fd29a, #ffc23c, var(--nose)); flex: 1; }
-
-  footer { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 15px; }
-  .legend { display: flex; gap: 22px; }
-  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 7px; vertical-align: -1px; }
-
-  @media print { body { background: #fff; } .slide { box-shadow: none; } }
+  footer { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 15px; }
+  .legend { display: flex; gap: 24px; align-items: center; }
+  .legend span { display: flex; align-items: center; gap: 8px; }
+  .legend img { width: 20px; height: 20px; }
+  .legend img.mono { filter: invert(1); }
+  .hint { opacity: .6; }
+  @media print { .col { opacity: 1; filter: none; transform: none; } .hint { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .face.boing { animation: none; } .col { transition: none; } }
 </style>
 </head>
 <body>
-<div class="slide">
+<div class="slide" id="slide">
   <header>
     <h1>Pin<span>o</span>qio · how it works</h1>
-    <p>Any Mac call app · every line of the call, scored in ~5–8 s</p>
+    <p>Any Mac call app · every line of the call scored in ~5–8 s</p>
   </header>
 
+  <div class="hero">
+    <div class="face" id="face">
+      <img src="img/nose/0.webp" alt="Pinoqio, calm" class="on">
+      <img src="img/nose/1.webp" alt="">
+      <img src="img/nose/2.webp" alt="">
+      <img src="img/nose/3.webp" alt="">
+      <img src="img/nose/4.webp" alt="">
+      <div class="burst" id="burst">BOING!</div>
+    </div>
+    <div class="pct" id="pct">12% <small>chance of lying</small></div>
+    <div class="caption" id="caption"></div>
+  </div>
+
   <div class="flow">
-    <!-- 1. capture -->
-    <div class="col">
-      <div class="step">1 · Capture</div>
+    <div class="col" data-step="1">
+      <div class="step">1 · Hear the call</div>
       <div class="card local">
-        <span class="tag">Local · Mac</span>
-        <h3>Teams call, two channels</h3>
-        <p><b style="color:var(--ink)">BlackHole 2ch</b> = counterparty<br><b style="color:var(--ink)">Mic</b> = you</p>
+        <div class="brand">💻 Local · Mac</div>
+        <h3>Two channels</h3>
+        <p><b>BlackHole 2ch</b> = them<br><b>Mic</b> = you<br>Any call app: Teams, Meet, Zoom</p>
       </div>
       <div class="card eleven">
-        <span class="tag">ElevenLabs</span>
+        <div class="brand"><img class="mono" src="img/logos/elevenlabs.svg" alt="">ElevenLabs</div>
         <h3>Scribe v2 Realtime</h3>
-        <p>Streaming speech-to-text per channel, so speakers are labelled by design</p>
+        <p>Streaming speech-to-text per channel, speakers labelled by design</p>
       </div>
     </div>
-    <div class="arrow">→</div>
 
-    <!-- 2. signals -->
-    <div class="col">
-      <div class="step">2 · Signals</div>
-      <div class="card local">
-        <span class="tag">Local · Praat</span>
-        <h3>Voice vs own baseline</h3>
-        <p>Pitch, pauses, speech rate, fillers, response latency. Weighted on par with text cues, so a claim like “48 is final” gets a probability too</p>
-      </div>
-      <div class="card gemma big">
-        <span class="tag">Gemma 4 · 26B A4B</span>
+    <div class="col" data-step="2">
+      <div class="step">2 · Read the signals</div>
+      <div class="card gemma">
+        <div class="brand"><img src="img/logos/gemma-color.svg" alt="">Gemma 4 · 26B A4B</div>
         <h3>Analyst, every line</h3>
         <ul>
-          <li><b>Contradictions</b> with verbatim quotes</li>
-          <li><b>Number drift</b> vs promise ledger</li>
-          <li><b>Evasion</b> and hedging</li>
+          <li><b>Contradictions</b>, verbatim quotes</li>
+          <li><b>Changed numbers</b> vs promise ledger</li>
+          <li><b>Dodges</b> and hedging</li>
           <li><b>“Ask this next”</b></li>
         </ul>
       </div>
+      <div class="card local">
+        <div class="brand">🎙️ Local · Praat</div>
+        <h3>Voice vs own baseline</h3>
+        <p>Pitch, pauses, speech rate, fillers, time to answer</p>
+      </div>
     </div>
-    <div class="arrow">→</div>
 
-    <!-- 3. verify + score -->
-    <div class="col">
-      <div class="step">3 · Verify &amp; score</div>
-      <div class="card nebius big">
-        <span class="tag">Open model on Nebius · DeepSeek-V4.1-Flash</span>
-        <h3>Second opinion, never a replacement</h3>
+    <div class="col" data-step="3">
+      <div class="step">3 · Double-check</div>
+      <div class="card nebius">
+        <div class="brand"><img class="mono" src="img/logos/nebius.svg" alt=""><img src="img/logos/deepseek-color.svg" alt="">Nebius · DeepSeek-V4.1</div>
+        <h3>Open-source second opinion</h3>
         <ul>
-          <li><b>Verifier:</b> double-checks every contradiction and changed number Gemma reports, and can upgrade a changed number into a contradiction</li>
-          <li><b>Fallback:</b> answers when Gemma is slow (&gt; 8 s) or fails</li>
-          <li><b>Post-call summary:</b> commitments, red flags, next email</li>
+          <li><b>Verifier:</b> confirms every contradiction</li>
+          <li><b>Backup:</b> answers if Gemma is slow</li>
+          <li><b>Summary:</b> commitments, red flags, next email</li>
         </ul>
       </div>
       <div class="card local">
-        <span class="tag">Scorer</span>
-        <h3>Lie % + evidence chips</h3>
-        <p>Text and voice cues combined per answer: “probably false · 74%”. Capped at 95%: a nudge, not a verdict</p>
+        <div class="brand">⚖️ Scorer</div>
+        <h3>Lie % + evidence</h3>
+        <p>Words and voice combined per answer, capped at 95%: a nudge, not a verdict</p>
       </div>
     </div>
-    <div class="arrow">→</div>
 
-    <!-- 4. output -->
-    <div class="col">
+    <div class="col" data-step="4">
       <div class="step">4 · Act</div>
       <div class="card local">
-        <span class="tag">Floating window</span>
+        <div class="brand">🪟 Floating window</div>
         <h3>The nose grows</h3>
-        <div class="out"><span style="color:var(--muted);font-size:14px">0%</span><div class="nosebar"></div><span style="color:var(--muted);font-size:14px">95%</span></div>
-        <p style="margin-top:6px">Then/now quotes, ledger, ask-next, summary</p>
+        <p>Claim check, then/now quotes, ledger, ask-next</p>
       </div>
       <div class="card eleven">
-        <span class="tag">ElevenLabs Flash TTS</span>
+        <div class="brand"><img class="mono" src="img/logos/elevenlabs.svg" alt="">ElevenLabs Flash TTS</div>
         <h3>Speaks up</h3>
-        <p><b style="color:var(--ink)">Public:</b> says each inconsistency into the call<br><b style="color:var(--ink)">Whisper:</b> earpiece cue<br><b style="color:var(--ink)">Private:</b> silent, window only</p>
+        <p><b>“Earlier you said 40,000, now 48,000. Which one is it?”</b></p>
       </div>
       <div class="card local">
-        <span class="tag">Web</span>
+        <div class="brand">🌐 Web</div>
         <h3>pinoqio.pro7ocol.com</h3>
-        <p>Replay demo + “Try live” in Chrome</p>
+        <p>Replay demo + Try live</p>
       </div>
     </div>
   </div>
 
   <footer>
     <div class="legend">
-      <span><i style="background:var(--gemma)"></i>Gemma 4 (Gemini API)</span>
-      <span><i style="background:var(--eleven)"></i>ElevenLabs</span>
-      <span><i style="background:var(--nebius)"></i>Open-source model on Nebius</span>
-      <span><i style="background:var(--local)"></i>Runs locally / ours</span>
+      <span><img src="img/logos/gemma-color.svg" alt="">Gemma 4</span>
+      <span><img class="mono" src="img/logos/elevenlabs.svg" alt="">ElevenLabs</span>
+      <span><img class="mono" src="img/logos/nebius.svg" alt=""><img src="img/logos/deepseek-color.svg" alt="">Open model on Nebius</span>
+      <span>· MIT · github.com/bioztar/pinoqio</span>
     </div>
-    <span>MIT · github.com/bioztar/pinoqio</span>
+    <span class="hint">→ / click to build · ← back</span>
   </footer>
 </div>
+<script>
+  // Each step lights up one stage of the pipeline and grows the nose one notch.
+  const STAGES = [
+    { pct: 12, color: "#2fd29a", burst: "", cap: "“For 500 units the price is 40,000.” … later … “it comes to 48,000.”" },
+    { pct: 25, color: "#2fd29a", burst: "", cap: "Both voices heard and transcribed live." },
+    { pct: 58, color: "#ffc23c", burst: "BOING!", cap: "Gemma: “40,000”, then “48,000”. Same item, new number." },
+    { pct: 86, color: "#ff8a3c", burst: "BOING!", cap: "DeepSeek confirms a real contradiction. Voice: slower, pitch up." },
+    { pct: 95, color: "#ff5a3c", burst: "SPROING!!", cap: "Pinoqio says it out loud, into the call." },
+  ];
+  const face = document.getElementById("face"), imgs = face.querySelectorAll("img");
+  const pct = document.getElementById("pct"), cap = document.getElementById("caption"), burst = document.getElementById("burst");
+  const cols = document.querySelectorAll(".col");
+  let step = Math.min(4, Math.max(0, Number(new URLSearchParams(location.search).get("step") || 0)));
+
+  function render(animate) {
+    const s = STAGES[step];
+    imgs.forEach((im, i) => im.classList.toggle("on", i === step));
+    cols.forEach(c => { const n = Number(c.dataset.step); c.classList.toggle("on", n <= step); c.classList.toggle("now", n === step); });
+    pct.firstChild.nodeValue = s.pct + "% ";
+    pct.style.color = s.color;
+    cap.textContent = s.cap;
+    burst.textContent = s.burst;
+    burst.classList.toggle("show", Boolean(s.burst));
+    if (animate) { face.classList.remove("boing"); void face.offsetWidth; face.classList.add("boing"); }
+  }
+  function go(d) { const n = Math.max(0, Math.min(STAGES.length - 1, step + d)); if (n !== step) { step = n; render(d > 0); } }
+  document.addEventListener("keydown", e => {
+    if (["ArrowRight", " ", "PageDown", "Enter"].includes(e.key)) go(1);
+    if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) go(-1);
+  });
+  document.addEventListener("click", () => go(1));
+  function fit() { const k = Math.min(innerWidth / 1600, innerHeight / 900); document.getElementById("slide").style.transform = `scale(${k})`; }
+  addEventListener("resize", fit); fit(); render(false);
+</script>
 </body>
 </html>
