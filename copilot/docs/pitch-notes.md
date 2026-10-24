@@ -36,7 +36,7 @@ Say: "Pinoqio, meet our supplier." Start the call. Let the supplier (teammate) s
 "Gemma 4, ElevenLabs, Nebius. MIT licensed, fork it today."
 
 ## 8. Judge lane (0:10)
-"Our partner's Plata judge went from 0.814 to 0.894." (Partner confirms what the metric is before stage.)
+"Our partner's Plata judge went from 0.814 to 0.934." (Partner confirms what the metric is before stage.)
 
 ## 9. Close (0:10)
 "Scan the code, press Try live, talk to it. pinoqio.pro7ocol.com. Thank you."
