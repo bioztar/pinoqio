@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -18,6 +18,7 @@ log = logging.getLogger("pinoqio.web")
 BAR_FILE = UI_FILE.parent / "web_bar.html"
 STATIC_DIR = UI_FILE.parent / "static"
 REPLAY_DIR = Path(__file__).resolve().parents[1] / "demo" / "replay"
+BACKUP_VIDEO = REPLAY_DIR.parent / "backup-demo.mp4"
 
 
 def render_index(live: bool) -> str:
@@ -41,6 +42,14 @@ def create_web_app(replay_dir: Path = REPLAY_DIR, live_passcode: str | None = No
     @app.get("/demo/call.mp3")
     async def call_audio() -> FileResponse:
         return FileResponse(replay_dir / "call.mp3", media_type="audio/mpeg")
+
+    @app.get("/demo/backup.mp4")
+    async def backup_video() -> FileResponse:
+        # screen recording of the desktop app on the replay call, in case the live demo fails
+        path = BACKUP_VIDEO
+        if not path.is_file():
+            raise HTTPException(status_code=404)
+        return FileResponse(path, media_type="video/mp4")
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

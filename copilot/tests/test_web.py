@@ -31,6 +31,15 @@ def test_brand_head_and_static_files_served(tmp_path):
         assert r.status_code == 200 and r.headers["content-type"] == kind and len(r.content) > 1000
 
 
+def test_backup_video_served_when_present_else_404(tmp_path, monkeypatch):
+    client = TestClient(web.create_web_app(_replay_dir(tmp_path)))
+    monkeypatch.setattr(web, "BACKUP_VIDEO", tmp_path / "backup-demo.mp4")
+    assert client.get("/demo/backup.mp4").status_code == 404
+    (tmp_path / "backup-demo.mp4").write_bytes(b"mp4")
+    r = client.get("/demo/backup.mp4")
+    assert r.status_code == 200 and r.headers["content-type"] == "video/mp4"
+
+
 def test_each_connection_gets_its_own_full_replay(tmp_path):
     client = TestClient(web.create_web_app(_replay_dir(tmp_path)))
     assert client.get("/demo/call.mp3").content == b"ID3fake"
