@@ -24,8 +24,8 @@ LINES = [
     "Two truths in a row. Bold.",
     "Your numbers jump faster than the peso.",
     "Even Barça doesn't change the lineup this often.",
-    "My nose just filed an appeal.",
-    "You can see my nose from Montjuïc now.",
+    "Plata approves a card faster than you give a straight answer.",
+    "Noted. For the record, and for the memes.",
     "Even the sprout is shocked.",
     "The sparrow got a Plata card. He's staying.",
 ]
@@ -69,7 +69,7 @@ def puppet(frames):
       set(0);
       const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (still) set(8);
-      else setInterval(() => {{ if (!paused) set(n >= 8 ? (hold++ < 2 ? 8 : (hold = 0, 0)) : n + 1); }}, 2400);
+      else setInterval(() => {{ if (!paused) set(n >= 8 ? (hold++ < 2 ? 8 : (hold = 0, 0)) : n + 1); }}, 4000);
       let hold = 0;
     }})();
     </script>'''
