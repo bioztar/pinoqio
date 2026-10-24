@@ -10,5 +10,7 @@
 - 2026-10-24 13:45 voice+demo: voice.py (TTS + policy), demo/script.md, replay wavs (114 s), smoke_voice OK; PR open. Next: none, awaiting review.
 - 2026-10-24 brain: config (PR #4) + Gemma analyst/scorer/brain.py done, smoke run OK (~5 s/call with thinking_level MINIMAL). Next: review/merge brain PR.
 
+- 2026-10-24 nebius: fallback + verifier (DeepSeek-V4.1-Flash) + UI badge in PR #15, replay re-recorded, both planted contradictions verified 0.95. Stretch summary skipped.
+
 ## judge/ (Partner)
 - (fill in)
