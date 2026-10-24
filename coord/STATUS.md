@@ -16,6 +16,7 @@
 - 2026-10-24 summary: post-call summary on Nebius (Summary button, auto at call end, in recorded web demo) in PR #17.
 
 - 2026-10-24 doctor: `python -m pinoqio.doctor` stage preflight (10 s) + `app --demo-safe` pre-warm, PR open. Doctor shows Gemma 26B timing out at 10 s on this Mac right now.
+- 2026-10-24 docs: root README (hero, mermaid, honest limits), DEVPOST.md, architecture.md in PR. Found: app.py voice hook imports a missing module-level `voice.on_verdict`, so the desktop app does not speak yet (documented as a known gap). README links `judge/README.md`, which the judge lane must add.
 
 ## judge/ (Partner)
 - (fill in)
