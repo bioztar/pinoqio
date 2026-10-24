@@ -5,6 +5,7 @@ interject(text) -> into the call via speaker/BlackHole (PINOQIO_PUBLIC_DEVICE)
 decide(...)     -> pure policy, no audio, unit-tested.
 """
 import asyncio
+import json
 import logging
 import os
 from dataclasses import dataclass, replace
@@ -71,12 +72,33 @@ def cue_for(v: Verdict) -> str:
     return _DEFAULT_CUE
 
 
-def interjection_for(v: Verdict) -> str:
+# Partner's sarcastic lines (shared/pinoqio-art/lines.json): {then}/{now} templates, rotated so
+# each callout in a call sounds different. PINOQIO_LANG=ru for Russian. Plain template if missing.
+LINES_FILE = Path(__file__).resolve().parents[2] / "shared" / "pinoqio-art" / "lines.json"
+_PLAIN = "Sorry to jump in. Earlier you said {then}, now {now}. Which one is it?"
+
+
+def _templates() -> tuple[str, ...]:
+    try:
+        data = json.loads(LINES_FILE.read_text(encoding="utf-8"))
+        lines = data["interjections"][os.environ.get("PINOQIO_LANG", "en")]
+        return tuple(t for t in lines if "{then}" in t and "{now}" in t) or (_PLAIN,)
+    except (OSError, KeyError, ValueError):
+        return (_PLAIN,)
+
+
+TEMPLATES = _templates()
+
+
+def callout_line(then: str, now: str, n: int = 0) -> str:
+    """The n-th funny line for a then/now pair (quotes trimmed to MAX_QUOTE_WORDS)."""
+    t = TEMPLATES[n % len(TEMPLATES)]
+    return t.replace("{then}", _words(then, MAX_QUOTE_WORDS)).replace("{now}", _words(now, MAX_QUOTE_WORDS))
+
+
+def interjection_for(v: Verdict, n: int = 0) -> str:
     c = v.contradiction
-    return (
-        f"Sorry to jump in. Earlier you said {_words(c.then_quote, MAX_QUOTE_WORDS)}, "
-        f"now {_words(c.now_quote, MAX_QUOTE_WORDS)}. Which one is it?"
-    )
+    return callout_line(c.then_quote, c.now_quote, n)
 
 
 def decide(state: PolicyState, v: Verdict, now: float) -> tuple[PolicyState, Action | None]:
@@ -105,29 +127,35 @@ def voice_mode() -> str:
     return mode if mode in VOICE_MODES else "whisper"
 
 
-def callout_for(v: Verdict) -> tuple[str, str] | None:
-    """(dedupe key, line to say) for an inconsistency in this verdict, else None.
+def _drift_pair(label: str) -> tuple[str, str] | None:
+    """'Delivery date: middle of March at 0:25, now end of April' -> ('middle of March', 'end of April')."""
+    then, _, now = label.split(":", 1)[-1].partition(", now ")
+    return (then.rsplit(" at ", 1)[0].strip(), now.strip()) if now else None
+
+
+def callout_for(v: Verdict) -> tuple[str, tuple[str, str]] | None:
+    """(dedupe key, (then, now)) for an inconsistency in this verdict, else None.
 
     Keyed by topic (the drift chip's "Delivery date: ..." prefix) so a contradiction and
     the matching number drift on a later line are called out once, not twice.
     """
     drift = [ch for ch in v.chips if ch.kind == "number_drift"]
-    topic = max(drift, key=lambda ch: ch.weight).label.split(":")[0].strip().lower() if drift else None
+    top = max(drift, key=lambda ch: ch.weight) if drift else None
+    topic = top.label.split(":")[0].strip().lower() if top else None
     c = v.contradiction
     if c is not None and c.confidence >= PUBLIC_MIN_CONF:
-        return f"t:{topic}" if topic else f"c:{c.then_utterance_id}", interjection_for(v)
-    if drift:
-        label = _words(max(drift, key=lambda ch: ch.weight).label, 16)
-        return f"t:{topic}", f"Sorry to jump in. {label}. Which one is it?"
-    return None
+        return (f"t:{topic}" if topic else f"c:{c.then_utterance_id}"), (c.then_quote, c.now_quote)
+    pair = _drift_pair(top.label) if top else None
+    return (f"t:{topic}", pair) if pair else None
 
 
 def decide_public(state: PolicyState, v: Verdict) -> tuple[PolicyState, Action | None]:
-    """Public mode: say each distinct inconsistency out loud once."""
+    """Public mode: say each distinct inconsistency out loud once, a different funny line each time."""
     hit = callout_for(v)
     if hit is None or hit[0] in state.said:
         return state, None
-    return replace(state, said=state.said | {hit[0]}), Action("interject", hit[1])
+    key, (then, now) = hit
+    return replace(state, said=state.said | {key}), Action("interject", callout_line(then, now, len(state.said)))
 
 
 # ---------- TTS ----------
