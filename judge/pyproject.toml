@@ -1,0 +1,11 @@
+[project]
+name = "pinoqio-judge"
+version = "0.1.0"
+description = "Pinoqio judge lane: an LLM judge that learns an expert's unwritten rules (Plata track)"
+requires-python = ">=3.11"
+dependencies = [
+  "google-genai",
+  "pandas",
+  "scikit-learn",
+  "python-dotenv",
+]
