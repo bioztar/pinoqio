@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pinoqio demo script</title>
+<style>
+  :root { --bg:#0d1220; --panel:#151c2e; --ink:#e9edf5; --muted:#8e98ad; --me:#4f8cff; --them:#ffc23c; --pq:#ff5a3c; --ok:#2fd29a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px 16px 60px; }
+  h1 { font-size: 24px; margin: 6px 0 2px; } h1 span { color: var(--pq); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  nav { position: sticky; top: 0; background: var(--bg); padding: 8px 0; display: flex; gap: 6px; overflow-x: auto; z-index: 2; }
+  nav a { flex: none; color: var(--ink); text-decoration: none; background: var(--panel); border-radius: 99px; padding: 5px 12px; font-size: 14px; }
+  h2 { font-size: 18px; margin: 26px 0 8px; color: var(--pq); }
+  .t { color: var(--muted); font-size: 13px; font-weight: 400; }
+  .line { background: var(--panel); border-radius: 12px; padding: 10px 12px; margin: 8px 0; border-left: 4px solid var(--muted); }
+  .line b { display: block; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 2px; }
+  .me { border-color: var(--me); } .me b { color: var(--me); }
+  .them { border-color: var(--them); } .them b { color: var(--them); }
+  .pq { border-color: var(--pq); background: #2a1715; } .pq b { color: var(--pq); }
+  .do { border-color: var(--ok); } .do b { color: var(--ok); }
+  .cue { color: var(--muted); font-style: italic; font-size: 14px; }
+  .wait { display: inline-block; font-size: 12px; color: var(--muted); border: 1px solid #2a3450; border-radius: 99px; padding: 1px 8px; margin-top: 4px; }
+  code { font: 13px ui-monospace, Menlo, monospace; background: #0a0f1a; padding: 2px 5px; border-radius: 5px; word-break: break-all; }
+  ol { padding-left: 20px; } li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Pin<span>o</span>qio · demo script</h1>
+<div class="sub">Partner = buyer on the laptop · Vitaly = seller on the phone · ~4 min</div>
+<nav><a href="#setup">Setup</a><a href="#open">Open</a><a href="#call">Call</a><a href="#close">Close</a><a href="#slides">Slides</a><a href="#rescue">If it breaks</a></nav>
+
+<h2 id="setup">0 · Setup <span class="t">before going on stage</span></h2>
+<div class="line do"><b>Laptop</b>Teams: Speaker <b style="display:inline;color:var(--ink)">BlackHole 2ch</b>, Mic <b style="display:inline;color:var(--ink)">MacBook Air Microphone</b>. Volume up. Do Not Disturb on.</div>
+<div class="line do"><b>Laptop</b><code>cd ~/DEV/pinoqio/copilot &amp;&amp; uv run python -m pinoqio.doctor</code></div>
+<div class="line do"><b>Phone</b>Vitaly joins the Teams call, stands a few metres from the laptop.</div>
+<div class="line do"><b>Laptop</b><code>uv run python -m pinoqio.app --source live --voice public --demo-safe</code><br><span class="cue">add --art scene for the rooftop Pinoqio</span></div>
+
+<h2 id="open">1 · Opening <span class="t">0:20</span></h2>
+<div class="line me"><b>Partner (to audience)</b>Negotiations are full of numbers. Nobody tracks them all live. This is Pinoqio. It sits in your call and its nose grows when the other side's story doesn't add up. Let's call our supplier.</div>
+
+<h2 id="call">2 · The call <span class="t">2:30</span></h2>
+<div class="line me"><b>Buyer</b>Hello! How are you?</div>
+<div class="line them"><b>Seller</b>Hi! Busy, but good. Lots of orders this month.</div>
+<div class="line pq"><b>Pinoqio</b>Silent. Nose small, ~12%. It is learning the seller's normal voice.</div>
+
+<div class="line me"><b>Buyer</b>I need 200 laptops. What is the price?</div>
+<div class="line them"><b>Seller</b>For 200 units, it's nine hundred euros each, delivery included.</div>
+<div class="line pq"><b>Pinoqio (screen)</b>Promise ledger: unit price 900 €, delivery included.<span class="wait">wait 5 s</span></div>
+
+<div class="line me"><b>Buyer</b>When is delivery?</div>
+<div class="line them"><b>Seller</b>Two weeks from the order, guaranteed.</div>
+<div class="line pq"><b>Pinoqio (screen)</b>Ledger: delivery 2 weeks.<span class="wait">wait 5 s</span></div>
+
+<div class="line me"><b>Buyer</b>What is the warranty?</div>
+<div class="line them"><b>Seller</b><span class="cue">(pause, vague)</span> Well… it depends on the model. Our support is really very good, many clients are happy.</div>
+<div class="line pq"><b>Pinoqio (screen)</b>“Dodged” chip, nose grows a notch, “Ask this next” suggests a direct question.<span class="wait">wait 5 s</span></div>
+
+<div class="line me"><b>Buyer</b>OK. What is the total price?</div>
+<div class="line them"><b>Seller</b>Sure. Two hundred times one thousand fifty, plus delivery.</div>
+<div class="line pq"><b>Pinoqio (OUT LOUD)</b>BOING! Something like: “Two minutes ago it was ‘nine hundred euros each, delivery included’. Now it's ‘one thousand fifty, plus delivery’. I'm not arguing, I'm just taking minutes.”<span class="wait">let it finish, then 3 s</span></div>
+
+<div class="line me"><b>Buyer</b>Delivery is two weeks?</div>
+<div class="line them"><b>Seller</b>Actually, more like five or six weeks, with the current stock.</div>
+<div class="line pq"><b>Pinoqio (OUT LOUD)</b>Second line, e.g. “‘Two weeks, guaranteed’ and ‘five or six weeks’: a lovely duet. Shame they're singing different songs.”<span class="wait">let it finish</span></div>
+
+<div class="line me"><b>Buyer</b>Is this your final price?</div>
+<div class="line them"><b>Seller</b><span class="cue">(slower, small pause, a bit higher voice)</span> Yes… yes, that's our final price. Really, we can't go lower.</div>
+<div class="line pq"><b>Pinoqio (screen only)</b>Claim check: “Probably false · ~70%”: pitch up, slow to answer, hedging. Nose long, SPROING!<span class="wait">partner points at it</span></div>
+
+<div class="line me"><b>Buyer</b>And payment?</div>
+<div class="line them"><b>Seller</b><span class="cue">(calm, clear)</span> Net thirty days from delivery, same as always.</div>
+<div class="line pq"><b>Pinoqio (screen)</b>Stays low: “Probably true”. It doesn't cry wolf.</div>
+
+<div class="line me"><b>Buyer</b>OK. Please send it by email. Thank you!</div>
+<div class="line them"><b>Seller</b>Will do. Have a good day!</div>
+<div class="line do"><b>Partner</b>Click <b style="display:inline;color:var(--ink)">Summary</b>: what changed (900 → 1,050, 2 → 5-6 weeks), red flags with quotes, and the next email to send.</div>
+
+<h2 id="close">3 · Wrap the demo <span class="t">0:20</span></h2>
+<div class="line me"><b>Partner (to audience)</b>Every flag comes with the quote behind it. Gemma 4 reads every line, an open-source model on Nebius double-checks it, ElevenLabs hears and speaks. It's a nudge, not a lie detector: on our test set it catches 7 of 8 contradictions with zero false ones.</div>
+
+<h2 id="slides">4 · Slides <span class="t">1:00</span></h2>
+<div class="line do"><b>Laptop</b>Open <code>copilot/docs/stage.html</code>, press → to build.</div>
+<ol>
+  <li><b>How it works</b>: 4 clicks, the nose grows with each stage. “Hear the call → read the signals (Gemma 4 + voice) → double-check (DeepSeek on Nebius) → act: nose, voice, web.”</li>
+  <li>→ once more: <b>Pinoqio as a judge</b> (partner's part). “Same idea for bots: a judge that learns an expert's rules from labelled examples. Plata's track: 0.814 → 0.934, Docker adapt/eval.”</li>
+  <li>Close: “Try it at pinoqio.pro7ocol.com. MIT, fork it today.”</li>
+</ol>
+
+<h2 id="rescue">If it breaks</h2>
+<div class="line do"><b>No transcript of the seller</b>Teams speaker is not BlackHole 2ch. Fix it, the app keeps running.</div>
+<div class="line do"><b>Nose doesn't move</b>Models slow. Keep talking; DeepSeek takes over within ~8 s.</div>
+<div class="line do"><b>Nothing at all</b>Close the window, run the recording: <code>uv run python -m pinoqio.app --source replay --them-wav demo/replay/them.wav --me-wav demo/replay/me.wav --voice public</code> or open pinoqio.pro7ocol.com → Play demo.</div>
+</main>
+</body>
+</html>
