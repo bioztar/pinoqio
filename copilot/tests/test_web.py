@@ -33,6 +33,7 @@ def test_each_connection_gets_its_own_full_replay(tmp_path):
 
 def test_shipped_demo_assets_load():
     events = record.load(web.REPLAY_DIR / "events.jsonl")
-    assert {e["type"] for e in events} == {"utterance", "verdict"}
+    assert {e["type"] for e in events} == {"utterance", "verdict", "summary"}
+    assert events[-1]["type"] == "summary"  # post-call summary closes the recording
     assert [e["t"] for e in events] == sorted(e["t"] for e in events)
     assert (web.REPLAY_DIR / "call.mp3").stat().st_size > 10_000

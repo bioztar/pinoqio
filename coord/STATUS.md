@@ -12,5 +12,7 @@
 
 - 2026-10-24 nebius: fallback + verifier (DeepSeek-V4.1-Flash) + UI badge in PR #15, replay re-recorded, both planted contradictions verified 0.95. Stretch summary skipped.
 
+- 2026-10-24 summary: post-call summary on Nebius (Summary button, auto at call end, in recorded web demo) in PR #17.
+
 ## judge/ (Partner)
 - (fill in)
