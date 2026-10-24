@@ -23,21 +23,55 @@
   #pct { font-size:20px; font-weight:700; color:var(--p); transition:color .6s; margin-top:-4px; }
   #pct small { color:var(--mute); font-weight:400; font-size:12px; }
   /* five stage frames stacked; the one for the current % fades in, the others out (up and down) */
-  #face { position:relative; width:216px; height:190px; margin:0 auto; }
+  #face { position:relative; width:200px; height:176px; margin:0 auto; }
   #face img { position:absolute; inset:0; width:100%; height:100%; opacity:0; transition:opacity .4s ease-in-out; }
   #face img.on { opacity:1; }
+  /* cartoon squash & stretch on the head, tip glow flash, comic burst, leaf, deflate */
+  #face.boing { animation:boing .6s cubic-bezier(.3,1.6,.5,1); transform-origin:35% 65%; }
+  #face.pfft { animation:pfft .3s ease-out; transform-origin:35% 65%; }
+  @keyframes boing {
+    0% { transform:scale(1,1) rotate(0); filter:none; }
+    25% { transform:scale(1.12,.92) rotate(-3deg); filter:brightness(1.5) drop-shadow(0 0 10px #ff4a3a); }
+    55% { transform:scale(.94,1.08) rotate(2deg); filter:brightness(1.2) drop-shadow(0 0 6px #ff4a3a); }
+    80% { transform:scale(1.03,.99) rotate(-1deg); filter:none; }
+    100% { transform:scale(1,1) rotate(0); filter:none; }
+  }
+  @keyframes pfft { 0% { transform:scale(1); } 40% { transform:scale(.96,.97); } 100% { transform:scale(1); } }
+  .burst { position:absolute; right:-8px; top:2px; z-index:2; pointer-events:none; opacity:0; font-weight:900;
+    font-style:italic; transform:rotate(8deg); white-space:nowrap; }
+  .burst.up, .burst.big { padding:2px 10px; border:2px solid #111; border-radius:6px; background:#ffd84a; color:#c2271c;
+    font-size:18px; box-shadow:2px 2px 0 #111; animation:pop 1.3s ease-out; }
+  .burst.big { font-size:24px; background:#ff9d2e; animation:pop 1.6s ease-out; }
+  .burst.down { top:34px; right:20px; font-size:13px; color:var(--mute); animation:puff 1.1s ease-out; }
+  @keyframes pop { 0% { opacity:0; transform:scale(.2) rotate(-10deg); } 15% { opacity:1; transform:scale(1.25) rotate(10deg); }
+    30% { transform:scale(1) rotate(8deg); } 75% { opacity:1; } 100% { opacity:0; transform:scale(1) rotate(8deg); } }
+  @keyframes puff { 0% { opacity:0; transform:translateY(0); } 20% { opacity:1; } 100% { opacity:0; transform:translateY(8px); } }
+  #leaf { position:absolute; left:175px; top:52px; width:34px; height:34px; transform:scale(0); transform-origin:10% 95%;
+    transition:transform .5s cubic-bezier(.3,1.7,.5,1); pointer-events:none; z-index:1; }
+  #leaf.on { transform:scale(1); }
+  @media (prefers-reduced-motion: reduce) {
+    #face.boing, #face.pfft, .burst.up, .burst.big, .burst.down { animation:none; }
+    .burst { display:none; }
+    #leaf { transition:none; }
+  }
   .scroll { overflow-y:auto; }
   .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:5px 10px; flex:none; }
-  .panel h3 { margin:0 0 4px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }
-  #chips { display:flex; flex-wrap:wrap; gap:5px; min-height:24px; }
-  .chip { font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:#222733; }
+  .panel h3 { margin:0 0 2px; font-size:10px; line-height:1.2; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }
+  #chips { display:flex; flex-wrap:wrap; gap:4px; }
+  .cl { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cl .who { display:inline-block; width:38px; color:var(--mute); font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+  #cv { font-size:15px; font-weight:800; color:var(--p); margin:2px 0 3px; transition:color .6s; }
+  #cv small { font-weight:500; font-size:12px; color:var(--mute); }
+  .chip { font-size:11px; max-width:49%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:1px 8px; border-radius:999px; border:1px solid var(--line); background:#222733; }
   .chip.strong { border-color:#d96a5b; color:#ffb4a8; }
   #badge { text-align:center; font-size:11px; color:var(--mute); min-height:14px; }
   #contra .q { font-style:italic; }
   #contra .t { color:var(--mute); font-size:12px; }
-  #ask { color:var(--accent); font-weight:600; }
+  #ask { color:var(--accent); font-weight:600; font-size:14px; }
+  #askp h3 { margin:0 0 1px; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
-  td, th { text-align:left; padding:2px 4px; }
+  td, th { text-align:left; padding:1px 4px; line-height:1.25; }
+  #contra div { line-height:1.3; }
   th { color:var(--mute); font-weight:500; font-size:11px; }
   tr:nth-child(even) td { background:#1c202a; }
   #transcript { flex:1; min-height:40px; display:flex; flex-direction:column; gap:4px; }
@@ -68,17 +102,28 @@
 <div class="hero">
   <div id="face" role="img" aria-label="Pinoqio; the longer the nose, the likelier the lie">
     <img src="/static/nose/0.webp" alt="" class="on"><img src="/static/nose/1.webp" alt=""><img src="/static/nose/2.webp" alt=""><img src="/static/nose/3.webp" alt=""><img src="/static/nose/4.webp" alt="">
+    <svg id="leaf" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M3 38 Q8 28 15 22" stroke="#7a4a1e" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M14 23 Q12 6 36 4 Q38 26 14 23 Z" fill="#4cc261" stroke="#2c8a40" stroke-width="1.5"/>
+      <path d="M17 21 Q26 14 33 8" stroke="#2c8a40" stroke-width="1.5" fill="none"/>
+    </svg>
+    <div id="burst" class="burst" aria-hidden="true"></div>
   </div>
   <div id="pct">0% <small>chance of lying</small></div>
   <div id="badge"></div>
 </div>
 
-<div class="panel"><h3>Evidence</h3><div id="chips"></div></div>
+<div class="panel" id="claim"><h3>Claim check</h3>
+  <div class="cl"><span class="who">You</span><span id="cq">…</span></div>
+  <div class="cl"><span class="who">Them</span><span id="ca">waiting for an answer</span></div>
+  <div id="cv"></div>
+  <div id="chips"></div>
+</div>
 <div class="panel hidden" id="contra"><h3>Contradiction</h3>
   <div><span class="t" id="c-then-t"></span> <span class="q" id="c-then"></span></div>
   <div><span class="t" id="c-now-t"></span> <span class="q" id="c-now"></span></div>
 </div>
-<div class="panel"><h3>Ask this next</h3><div id="ask">…</div></div>
+<div class="panel" id="askp"><h3>Ask this next</h3><div id="ask" class="cl">…</div></div>
 <div class="panel"><h3>Promise ledger</h3>
   <table><thead><tr><th>Who</th><th>Item</th><th>Value</th></tr></thead><tbody id="ledger"></tbody></table>
 </div>
@@ -95,6 +140,8 @@
   const $ = id => document.getElementById(id);
   const times = new Map();          // utterance id -> t_start
   const sentAt = new Map();         // utterance id -> wall-clock ms, for model latency
+  const questions = new Map();      // their utterance id -> { q: my last line before it, a: their text }
+  let lastMe = '';
   let contradiction = null;         // latest contradiction seen
   let prob = 0;
 
@@ -108,18 +155,45 @@
     return el;
   };
 
+  let lastStage = 0;
+  const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+
+  // comic reaction on a stage change; no sound (the speakers feed the call mic)
+  function react(from, to) {
+    const face = $('face'), burst = $('burst');
+    $('leaf').classList.toggle('on', to === 4);
+    burst.className = 'burst';
+    if (to > from) {
+      face.classList.remove('pfft');
+      restart(face, 'boing');
+      if (to >= 2) {
+        burst.textContent = to === 4 ? 'SPROING!!' : 'BOING!';
+        restart(burst, to === 4 ? 'big' : 'up');
+      }
+    } else {
+      face.classList.remove('boing');
+      restart(face, 'pfft');
+      burst.textContent = 'pfft';
+      restart(burst, 'down');
+    }
+  }
+
   function setProb(p) {
     prob = p;
     const hue = Math.round(120 - 120 * p);          // green -> amber -> red
     document.documentElement.style.setProperty('--p', `hsl(${hue} 75% 52%)`);
     const stage = Math.min(4, Math.floor(p * 5));   // 0-20, 20-40, 40-60, 60-80, 80-100 %
     $('face').querySelectorAll('img').forEach((img, i) => img.classList.toggle('on', i === stage));
+    if (stage !== lastStage) react(lastStage, stage);
+    lastStage = stage;
     $('pct').firstChild.nodeValue = `${Math.round(p * 100)}% `;
   }
 
   function onUtterance(u) {
     times.set(u.id, u.t_start);
     sentAt.set(u.id, performance.now());
+    if (u.speaker === 'me') lastMe = u.text;
+    else questions.set(u.id, { q: lastMe, a: u.text });
     const box = $('transcript');
     add(box, 'div', u.text, `u ${u.speaker}`);
     box.scrollTop = box.scrollHeight;
@@ -128,8 +202,15 @@
   function onVerdict(v) {
     setProb(v.probability);
     const chips = $('chips'); clear(chips);
-    // kind "model" chips say which model answered / verified; they go in the badge, not the evidence
-    v.chips.filter(c => c.kind !== 'model').forEach(c => add(chips, 'span', c.label, 'chip' + (c.weight >= 0.25 ? ' strong' : '')));
+    // kind "model" chips say which model answered / verified; they go in the badge, not the reasons
+    const reasons = v.chips.filter(c => c.kind !== 'model').sort((a, b) => b.weight - a.weight).slice(0, 3);
+    reasons.forEach(c => add(chips, 'span', c.label, 'chip' + (c.weight >= 0.25 ? ' strong' : '')));
+    const qa = questions.get(v.utterance_id);
+    if (qa) { $('cq').textContent = qa.q || '(no question)'; $('ca').textContent = qa.a; }
+    const pct = Math.round(v.probability * 100);
+    const cv = $('cv');
+    cv.textContent = `${v.probability >= 0.5 ? 'Probably false' : 'Probably true'} · ${pct}%`;
+    if (!reasons.length) add(cv, 'small', ' no red flags');
     $('badge').textContent = v.chips.filter(c => c.kind === 'model').map(c => c.label).join(' · ');
     $('ask').textContent = v.ask_next || '…';
     const led = $('ledger'); clear(led);
@@ -214,8 +295,9 @@
   }
 
   function reset() {
-    times.clear(); sentAt.clear(); contradiction = null;
-    ['chips', 'ledger', 'transcript'].forEach(id => clear($(id)));
+    times.clear(); sentAt.clear(); questions.clear(); lastMe = ''; contradiction = null;
+    ['chips', 'ledger', 'transcript', 'cv'].forEach(id => clear($(id)));
+    $('cq').textContent = '…'; $('ca').textContent = 'waiting for an answer';
     $('contra').classList.add('hidden');
     $('summary').classList.add('hidden'); haveSummary = false;
     $('ask').textContent = '…';
