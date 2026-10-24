@@ -81,11 +81,15 @@ def main() -> None:
     p.add_argument("--no-window", action="store_true")
     p.add_argument("--record", metavar="PATH.jsonl", help="write every event with its time offset (feeds the web demo)")
     p.add_argument("--speed", type=float, default=1.0, help="fake source playback speed")
+    p.add_argument("--demo-safe", action="store_true", help="pre-warm Gemma, Nebius, Scribe and TTS connections before the call starts")
     args = p.parse_args()
     if args.source == "replay" and not (args.them_wav and args.me_wav):
         p.error("--source replay needs --them-wav and --me-wav")
 
     logging.basicConfig(level=logging.INFO)
+    if args.demo_safe:
+        from pinoqio import doctor
+        print(doctor.render(asyncio.run(doctor.prewarm())))
     port = free_port()
     server = uvicorn.Server(uvicorn.Config(create_app(make_source(args)), host="127.0.0.1", port=port, log_level="warning"))
     url = f"http://127.0.0.1:{port}"
