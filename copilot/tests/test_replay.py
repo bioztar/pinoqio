@@ -1,24 +1,32 @@
-from pathlib import Path
+import time
 
 import numpy as np
+import soundfile as sf
 
-from demo.make_replay import RATE, build_timeline, parse_script
-
-SCRIPT = Path(__file__).resolve().parents[1] / "demo" / "script.md"
-
-
-def test_script_parses_alternating_numbered_lines():
-    lines = parse_script(SCRIPT.read_text())
-    assert [l.n for l in lines] == list(range(1, len(lines) + 1))
-    assert {l.role for l in lines} == {"BUYER", "SUPPLIER"}
-    assert len(lines) >= 25
+from pinoqio import replay
 
 
-def test_timeline_aligned_equal_length():
-    lines = parse_script("1. **BUYER** [0.5]: hi\n2. **SUPPLIER** [1.0]: yo\n")
-    clips = {1: np.ones(RATE, dtype=np.int16), 2: np.full(RATE // 2, 2, dtype=np.int16)}
-    out = build_timeline(lines, clips)
-    assert len(out["me"]) == len(out["them"])
-    assert out["me"][int(0.5 * RATE)] == 1 and out["me"][int(0.5 * RATE) - 1] == 0
-    start2 = int(0.5 * RATE) + RATE + RATE
-    assert out["them"][start2] == 2 and out["me"][start2] == 0
+def write_wav(path, secs=0.5, rate=16_000):
+    t = np.arange(int(rate * secs)) / rate
+    sf.write(str(path), 0.5 * np.sin(2 * np.pi * 200 * t), rate, subtype="PCM_16")
+
+
+async def test_chunks_are_100ms_int16(tmp_path):
+    wav = tmp_path / "a.wav"
+    write_wav(wav)
+    chunks = [c async for c in replay.wav_chunks(wav, realtime=False)]
+    assert len(chunks) == 5 and all(c.dtype == np.int16 and len(c) == 1600 for c in chunks)
+
+
+async def test_resamples_to_16k(tmp_path):
+    wav = tmp_path / "a.wav"
+    write_wav(wav, secs=1.0, rate=44_100)
+    assert len(replay.load_wav(wav)) == 16_000
+
+
+async def test_realtime_pacing(tmp_path):
+    wav = tmp_path / "a.wav"
+    write_wav(wav, secs=0.5)
+    t0 = time.monotonic()
+    _ = [c async for c in replay.wav_chunks(wav, realtime=True)]
+    assert time.monotonic() - t0 >= 0.45
