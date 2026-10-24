@@ -23,10 +23,11 @@
 <body>
 <h1>Pinoqio: live test script</h1>
 <div class="box">
-  <b>Roles reversed:</b> Vitaly is the supplier (the one lying, on this Mac's mic). Partner is the buyer (short, simple English, on Teams).<br>
-  Pinoqio listens to the <b>mic</b> as “them”, so start it with the channels swapped:<br>
-  <code>cd /Users/alex/DEV/pinoqio/copilot &amp;&amp; PINOQIO_THEM_DEVICE="MacBook Air Microphone" PINOQIO_ME_DEVICE="BlackHole 2ch" uv run python -m pinoqio.app --source live --voice public --demo-safe</code><br>
-  <b>Rhythm:</b> one sentence each. After every supplier line, wait <b>~5–8 s</b> until the nose reacts. Pinoqio mutes its own mic while it speaks.
+  <b>Stage setup:</b> Partner = buyer, on the laptop running Pinoqio (MacBook mic). Vitaly = seller, the one lying, joins the Teams call from his phone.<br>
+  Pinoqio analyses the far end of the call (Vitaly, via BlackHole 2ch), so the default channels are right:<br>
+  <code>cd /Users/alex/DEV/pinoqio/copilot &amp;&amp; uv run python -m pinoqio.app --source live --voice public --demo-safe</code><br>
+  Laptop Teams: <b>Speaker = BlackHole 2ch</b> (no echo; the room hears Vitaly live), <b>Microphone = MacBook Air Microphone</b>. Laptop volume up: Pinoqio speaks through the laptop speakers and Teams carries it to the phone.<br>
+  <b>Rhythm:</b> one sentence each. After every seller line, wait <b>~5–8 s</b> until the nose reacts. Vitaly stands a few metres from the laptop.
 </div>
 
 <div class="two">
@@ -47,7 +48,7 @@
 </section>
 
 <section>
-  <h2>Vitaly (supplier, lying) <button data-copy="them">Copy</button></h2>
+  <h2>Vitaly (seller, on the phone, lying) <button data-copy="them">Copy</button></h2>
   <ol id="them">
     <li>Hi! Busy, but good. Lots of orders this month.</li>
     <li>For 200 units, it's nine hundred euros each, delivery included.</li>
