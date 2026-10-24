@@ -1,6 +1,6 @@
 # Pinoqio pitch: 3-minute talk track
 
-Open `pitch.html`, arrow keys or click to advance. Total 3:00. Fill `{{EVAL}}` on slide 5 from `copilot/eval/report.md` before going on stage.
+Open `pitch.html`, arrow keys or click to advance. Total 3:00. Eval numbers on slide 5 come from `copilot/eval/report.md`.
 
 | # | Slide | Time | Cum. |
 |---|---|---|---|
@@ -27,7 +27,7 @@ Say: "Pinoqio, meet our supplier." Start the call. Let the supplier (teammate) s
 "Ears transcribe and read prosody. A Gemma 4 analyst extracts claims and numbers into a ledger. A second model on Nebius verifies before anything is flagged. The face shows it, the voice speaks up only when it matters."
 
 ## 5. Why it's honest (0:25)
-"We don't claim a lie detector. We score cues, with the quote behind them, from two independent models. Our eval: {{EVAL}}. You decide, the nose only points."
+"We don't claim a lie detector. We score cues, with the quote behind them, from two independent models. Our eval on 56 scripted lines: 7 of 8 contradictions caught with zero false contradictions, and we still flag a quarter of honest lines, so it is a nudge, not a verdict. You decide, the nose only points."
 
 ## 6. Nose stages (0:10)
 "Five stages, glanceable mid-sentence. Calm to strong cue."
