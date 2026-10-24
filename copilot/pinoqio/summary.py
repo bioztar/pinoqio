@@ -124,8 +124,10 @@ async def summarize(events: Iterable[Any], ask: Ask | None = None) -> Summary | 
     if not any(s == "them" for _, s, _, _ in d.lines):
         return None
     try:
-        model = config.nebius_model()
-        data = await (ask(_prompt(d), SYSTEM) if ask else nebius.ask_json(_prompt(d), SYSTEM, model, TIMEOUT_S))
+        if ask:
+            data, model = await ask(_prompt(d), SYSTEM), config.nebius_model()
+        else:  # model chain: label = whoever answered
+            data, model = await nebius.ask_json_model(_prompt(d), SYSTEM, None, TIMEOUT_S)
         return parse(data, d, nebius.short_name(model))
     except Exception as e:
         log.warning("summary failed, using offline: %s: %s", type(e).__name__, e)

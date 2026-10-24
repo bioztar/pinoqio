@@ -1,4 +1,5 @@
 """Verbal-cue analyst: one Gemma call per counterparty utterance -> structured Analysis."""
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Sequence
@@ -6,7 +7,10 @@ from typing import Any, Awaitable, Callable, Sequence
 from pinoqio.events import Contradiction, LedgerItem, Utterance
 from pinoqio.gemma import ask_json
 
+log = logging.getLogger(__name__)
+
 SYSTEM = (Path(__file__).parent / "prompts" / "analyst.md").read_text()
+WINDOW = 12  # transcript lines in the analyst prompt
 
 Ask = Callable[[str, str | None], Awaitable[dict]]
 
@@ -126,9 +130,14 @@ def parse_analysis(data: dict, history: Sequence[Utterance]) -> Analysis:
 async def analyze(
     history: Sequence[Utterance], ledger: Sequence[LedgerItem], ask: Ask = ask_json
 ) -> Analysis:
-    """Analyse history[-1] (a 'them' utterance). Raises GemmaError if the call fails."""
+    """Analyse history[-1] (a 'them' utterance). Raises GemmaError if the call fails.
+
+    The prompt carries only the last WINDOW lines plus the full ledger (it holds earlier numbers
+    with their utterance ids), so it stops growing over the call. Validation uses the full history."""
     prompt = (
-        f"TRANSCRIPT:\n{format_transcript(history)}\n\nLEDGER:\n{format_ledger(ledger)}\n\n"
+        f"TRANSCRIPT (recent lines; ledger entries may cite earlier utterance ids):\n"
+        f"{format_transcript(history[-WINDOW:])}\n\nLEDGER:\n{format_ledger(ledger)}\n\n"
         f"Current utterance id: {history[-1].id}. Return the JSON."
     )
+    log.info("analyst prompt ~%d tokens (%d lines)", (len(prompt) + len(SYSTEM)) // 4, min(len(history), WINDOW))
     return parse_analysis(await ask(prompt, SYSTEM), history)

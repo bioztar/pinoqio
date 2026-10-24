@@ -61,18 +61,66 @@ async def test_gemma_error_falls_back_to_nebius():
     assert "fallback" in models(out[1])[0]
 
 
-async def test_gemma_over_budget_falls_back(monkeypatch):
-    monkeypatch.setattr(brain, "GEMMA_BUDGET_S", 0.05)
+async def test_slow_gemma_is_hedged_by_nebius(monkeypatch):
+    monkeypatch.setattr(brain, "HEDGE_S", 0.05)
 
     async def slow(prompt, system):
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
         return {}
 
     async def fb(prompt, system):
         return {"ask_next": "from fallback"}
 
-    out = await collect(slow, fb)
+    out = await asyncio.wait_for(collect(slow, fb), 3)
+    assert out[1].ask_next == "from fallback" and "fallback" in models(out[1])[0]
+
+
+async def test_gemma_answering_inside_hedge_window_never_starts_nebius(monkeypatch):
+    started = []
+
+    async def gemma(prompt, system):
+        return {"ask_next": "from gemma"}
+
+    async def fb(prompt, system):
+        started.append(1)
+        return {}
+
+    out = await collect(gemma, fb)
+    assert out[1].ask_next == "from gemma" and models(out[1]) == ["Gemma 4"] and not started
+
+
+async def test_gemma_wins_when_it_answers_after_hedge_but_before_nebius(monkeypatch):
+    monkeypatch.setattr(brain, "HEDGE_S", 0.05)
+
+    async def gemma(prompt, system):
+        await asyncio.sleep(0.2)
+        return {"ask_next": "from gemma"}
+
+    async def fb(prompt, system):
+        await asyncio.sleep(1)
+        return {"ask_next": "from fallback"}
+
+    out = await collect(gemma, fb)
+    assert out[1].ask_next == "from gemma" and models(out[1]) == ["Gemma 4"]
+
+
+async def test_gemma_fails_nebius_answers_and_failed_racer_does_not_block(monkeypatch):
+    async def fb(prompt, system):
+        return {"ask_next": "from fallback"}
+
+    out = await collect(raising(GemmaError("500")), fb)
     assert out[1].ask_next == "from fallback"
+
+
+async def test_nothing_answers_within_total_budget(monkeypatch):
+    monkeypatch.setattr(brain, "HEDGE_S", 0.05)
+    monkeypatch.setattr(brain, "TOTAL_BUDGET_S", 0.2)
+
+    async def hang(prompt, system):
+        await asyncio.sleep(5)
+
+    out = await asyncio.wait_for(collect(hang, hang), 3)
+    assert isinstance(out[1], Verdict) and models(out[1]) == []
 
 
 async def test_flagged_drift_is_verified_and_upgraded():
