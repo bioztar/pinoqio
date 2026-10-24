@@ -2,7 +2,7 @@
 Partner = buyer on the laptop · Vitaly = seller on the phone · ~4 min
 
 ## 0 · Setup before going on stage
-- **Laptop:** Teams: Speaker **BlackHole 2ch**, Mic **MacBook Air Microphone**. Volume up. Do Not Disturb on.
+- **Laptop:** Teams: Speaker **Pinoqio Out** (laptop speakers + BlackHole), Mic **MacBook Air Microphone**. Volume up. Do Not Disturb on.
 - **Laptop:** `cd ~/DEV/pinoqio/copilot && uv run python -m pinoqio.doctor`
 - **Phone:** Vitaly joins the Teams call, stands a few metres from the laptop.
 - **Laptop:** `uv run python -m pinoqio.app --source live --voice public --demo-safe` (add `--art scene` for the rooftop Pinoqio)
@@ -58,7 +58,7 @@ Partner = buyer on the laptop · Vitaly = seller on the phone · ~4 min
   1. Close: “Try it at pinoqio.pro7ocol.com. MIT, fork it today.”
 
 ## If it breaks
-- **No transcript of the seller:** Teams speaker is not BlackHole 2ch. Fix it, the app keeps running.
+- **No transcript of the seller:** Teams speaker is not Pinoqio Out. Fix it, the app keeps running.
 - **Nose doesn't move:** Models slow. Keep talking; DeepSeek takes over within ~8 s.
 - **Nothing at all:** Close the window, run the recording: `uv run python -m pinoqio.app --source replay --them-wav demo/replay/them.wav --me-wav demo/replay/me.wav --voice public` or open pinoqio.pro7ocol.com → Play demo.
 

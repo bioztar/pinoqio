@@ -96,6 +96,7 @@ async def verdicts(
         try:
             async for u in utterances:
                 history = history + (u,)
+                log.info("heard %s #%s: %s", u.speaker, u.id, u.text[:90])
                 await out.put(u)
                 if u.speaker != "them":
                     continue
