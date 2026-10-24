@@ -51,9 +51,33 @@ def _num(token: str) -> float | None:
         return None
 
 
+_UNITS = {**WORD_NUM, "zero": 0, "thirteen": 13, "fourteen": 14, "sixteen": 16, "seventeen": 17,
+          "eighteen": 18, "nineteen": 19, "seventy": 70, "eighty": 80}
+_SPELLED = re.compile(r"\b(?:(?:%s|hundred|thousand|and)[\s-]+)*(?:%s|hundred|thousand)\b" % ("|".join(_UNITS), "|".join(_UNITS)))
+
+
+def _spelled_to_digits(text: str) -> str:
+    """'nine hundred' -> '900', 'one thousand fifty' -> '1050', 'forty-eight thousand' -> '48000'.
+    Speech-to-text sometimes writes numbers out; the regexes below only read digits."""
+    def conv(m: re.Match) -> str:
+        words = [w for w in re.split(r"[\s-]+", m.group(0)) if w and w != "and"]
+        total = cur = 0
+        for w in words:
+            if w == "hundred":
+                cur = max(cur, 1) * 100
+            elif w == "thousand":
+                total += max(cur, 1) * 1000
+                cur = 0
+            else:
+                cur += _UNITS[w]
+        n = total + cur
+        return str(n) if (n >= 100 or "hundred" in words or "thousand" in words) else m.group(0)
+    return _SPELLED.sub(conv, text.lower())
+
+
 def _price(text: str) -> str | None:
     """The money figure in a line, skipping quantities ('200 units', '200 times')."""
-    t = text.lower()
+    t = _spelled_to_digits(text)
     found = []
     for m in re.finditer(NUM, t):
         after = t[m.end():m.end() + 12]
@@ -121,4 +145,9 @@ if __name__ == "__main__":
     assert hits[0] is None and hits[1] is None and hits[4] is None, hits
     assert hits[2] and (hits[2].then, hits[2].now) == ("900", "1,050"), hits[2]
     assert hits[3] and (hits[3].then, hits[3].now) == ("2 weeks", "5-6 weeks"), hits[3]
+    # same call, numbers written out by speech-to-text
+    seen2: dict = {}
+    seen2, d1 = check("For two hundred units, it's nine hundred euros each, delivery included.", "What is the price?", 0.0, seen2)
+    seen2, d2 = check("Sure. Two hundred times one thousand fifty, plus delivery.", "What is the total price?", 30.0, seen2)
+    assert d1 is None and d2 and (d2.then, d2.now) == ("900", "1,050"), d2
     print("quickcheck ok")
